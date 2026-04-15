@@ -1,0 +1,34 @@
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthState
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager Nav
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-end align-items-center">
+            <AuthorizeView>
+                <Authorized>
+                    <span class="me-3 text-muted small">Olá, @context.User.Identity?.Name</span>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="Logout">Sair</button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        ((AppAuthStateProvider)AuthState).NotificarLogout();
+        Nav.NavigateTo("/login");
+    }
+}

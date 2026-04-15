@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+*.swp
+
+## Environment / secrets
+appsettings.Production.json
+*.env
+.env
+
+## Publish / deploy
+publish/
+out/
+
+## Logs
+*.log
+logs/
+
+## NuGet
+packages/
+*.nupkg

@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5825A8DB-E333-4018-905C-8AED17774882}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roupa.Domain", "src\Roupa.Domain\Roupa.Domain.csproj", "{7C578A88-511A-4B46-8089-52875B696039}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roupa.Application", "src\Roupa.Application\Roupa.Application.csproj", "{2B9099EF-61D5-451A-87DD-286FCE1D0527}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roupa.Infrastructure", "src\Roupa.Infrastructure\Roupa.Infrastructure.csproj", "{7A67807B-2D15-43E7-854F-D77303A06C86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roupa.Api", "src\Roupa.Api\Roupa.Api.csproj", "{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roupa.Web", "src\Roupa.Web\Roupa.Web.csproj", "{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C578A88-511A-4B46-8089-52875B696039}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C578A88-511A-4B46-8089-52875B696039}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C578A88-511A-4B46-8089-52875B696039}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C578A88-511A-4B46-8089-52875B696039}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B9099EF-61D5-451A-87DD-286FCE1D0527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B9099EF-61D5-451A-87DD-286FCE1D0527}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B9099EF-61D5-451A-87DD-286FCE1D0527}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B9099EF-61D5-451A-87DD-286FCE1D0527}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A67807B-2D15-43E7-854F-D77303A06C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A67807B-2D15-43E7-854F-D77303A06C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A67807B-2D15-43E7-854F-D77303A06C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A67807B-2D15-43E7-854F-D77303A06C86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7C578A88-511A-4B46-8089-52875B696039} = {5825A8DB-E333-4018-905C-8AED17774882}
+		{2B9099EF-61D5-451A-87DD-286FCE1D0527} = {5825A8DB-E333-4018-905C-8AED17774882}
+		{7A67807B-2D15-43E7-854F-D77303A06C86} = {5825A8DB-E333-4018-905C-8AED17774882}
+		{4AD41BA1-C974-4909-BC7D-6E9CA2F0B84C} = {5825A8DB-E333-4018-905C-8AED17774882}
+		{FB992DA3-7F86-4EB8-9F8A-1EC22E68B0F3} = {5825A8DB-E333-4018-905C-8AED17774882}
+	EndGlobalSection
+EndGlobal

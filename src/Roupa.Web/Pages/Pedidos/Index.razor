@@ -1,0 +1,149 @@
+@page "/pedidos"
+@attribute [Authorize]
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Pedidos</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Pedidos</h2>
+    <button class="btn btn-primary" @onclick="() => mostrarForm = true">+ Novo Pedido</button>
+</div>
+
+@if (mostrarForm)
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold">Novo Pedido</div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(erroForm))
+            {
+                <div class="alert alert-danger">@erroForm</div>
+            }
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Cliente *</label>
+                    <select class="form-select" @bind="novoPedido.ClienteId">
+                        <option value="">Selecione...</option>
+                        @foreach (var c in clientes)
+                        {
+                            <option value="@c.Id">@c.NomeFantasia</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Data de Entrega</label>
+                    <input class="form-control" type="date" @bind="novoPedido.DataEntrega" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Observações</label>
+                    <input class="form-control" @bind="novoPedido.Observacoes" />
+                </div>
+            </div>
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-success" @onclick="CriarPedido" disabled="@salvando">
+                    @if (salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Criar Pedido
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (carregando)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else if (!pedidos.Any())
+{
+    <div class="text-center py-5 text-muted">Nenhum pedido cadastrado.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Número</th>
+                            <th>Cliente</th>
+                            <th>Status</th>
+                            <th>Entrega</th>
+                            <th>Total</th>
+                            <th>Criado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in pedidos)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@p.Numero</td>
+                                <td>@p.NomeCliente</td>
+                                <td><span class="badge @BadgeStatus(p.Status)">@p.StatusNome</span></td>
+                                <td>@(p.DataEntrega?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                <td>@p.Total.ToString("C2")</td>
+                                <td>@p.CriadoEm.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary"
+                                        @onclick="@(() => Nav.NavigateTo($"/pedidos/{p.Id}"))">
+                                        Ver
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery] public string? ClienteId { get; set; }
+
+    private List<Models.PedidoDto> pedidos = [];
+    private List<Models.ClienteDto> clientes = [];
+    private Models.CriarPedidoModel novoPedido = new();
+    private bool carregando = true, mostrarForm, salvando;
+    private string erroForm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await Api.ListarClientesAsync();
+        pedidos = await Api.ListarPedidosAsync();
+        if (Guid.TryParse(ClienteId, out var cId))
+        {
+            pedidos = pedidos.Where(p => p.ClienteId == cId).ToList();
+            novoPedido.ClienteId = cId;
+        }
+        carregando = false;
+    }
+
+    private void Cancelar() { mostrarForm = false; erroForm = ""; }
+
+    private async Task CriarPedido()
+    {
+        salvando = true;
+        erroForm = "";
+        var (sucesso, dados, erro) = await Api.CriarPedidoAsync(novoPedido);
+        if (sucesso && dados is not null)
+        {
+            mostrarForm = false;
+            Nav.NavigateTo($"/pedidos/{dados.Id}");
+        }
+        else erroForm = erro ?? "Erro ao criar pedido.";
+        salvando = false;
+    }
+
+    private static string BadgeStatus(Models.StatusPedido s) => s switch
+    {
+        Models.StatusPedido.Rascunho   => "bg-secondary",
+        Models.StatusPedido.Confirmado => "bg-primary",
+        Models.StatusPedido.EmProducao => "bg-warning text-dark",
+        Models.StatusPedido.Concluido  => "bg-success",
+        Models.StatusPedido.Cancelado  => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

@@ -1,0 +1,132 @@
+@page "/clientes"
+@attribute [Authorize]
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Clientes</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Clientes</h2>
+    <button class="btn btn-primary" @onclick="() => mostrarForm = true">+ Novo Cliente</button>
+</div>
+
+@if (mostrarForm)
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold">Novo Cliente</div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(erroForm))
+            {
+                <div class="alert alert-danger">@erroForm</div>
+            }
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Razão Social *</label>
+                    <input class="form-control" @bind="novoCliente.RazaoSocial" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nome Fantasia *</label>
+                    <input class="form-control" @bind="novoCliente.NomeFantasia" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">CNPJ *</label>
+                    <input class="form-control" @bind="novoCliente.Cnpj" placeholder="00.000.000/0001-00" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" type="email" @bind="novoCliente.Email" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Telefone</label>
+                    <input class="form-control" @bind="novoCliente.Telefone" />
+                </div>
+            </div>
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-success" @onclick="SalvarCliente" disabled="@salvando">
+                    @if (salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Salvar
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (carregando)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else if (!clientes.Any())
+{
+    <div class="text-center py-5 text-muted">Nenhum cliente cadastrado.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome Fantasia</th>
+                            <th>Razão Social</th>
+                            <th>CNPJ</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in clientes)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@c.NomeFantasia</td>
+                                <td>@c.RazaoSocial</td>
+                                <td>@c.Cnpj</td>
+                                <td>@c.Email</td>
+                                <td>@c.Telefone</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" @onclick="@(() => Nav.NavigateTo($"/layouts?clienteId={c.Id}"))">Layouts</button>
+                                    <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="@(() => Nav.NavigateTo($"/pedidos?clienteId={c.Id}"))">Pedidos</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.ClienteDto> clientes = [];
+    private Models.CriarClienteModel novoCliente = new();
+    private bool carregando = true, mostrarForm, salvando;
+    private string erroForm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarAsync();
+        carregando = false;
+    }
+
+    private async Task CarregarAsync() =>
+        clientes = await Api.ListarClientesAsync();
+
+    private void Cancelar() { mostrarForm = false; erroForm = ""; }
+
+    private async Task SalvarCliente()
+    {
+        salvando = true;
+        erroForm = "";
+        var (sucesso, _, erro) = await Api.CriarClienteAsync(novoCliente);
+        if (sucesso)
+        {
+            mostrarForm = false;
+            novoCliente = new();
+            await CarregarAsync();
+        }
+        else erroForm = erro ?? "Erro ao salvar.";
+        salvando = false;
+    }
+}

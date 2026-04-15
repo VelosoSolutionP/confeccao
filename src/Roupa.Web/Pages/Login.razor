@@ -1,0 +1,62 @@
+@page "/login"
+@inject ApiService Api
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Roupa Solution</h2>
+            <p>Sistema de Gestão de Uniformes</p>
+        </div>
+
+        <EditForm Model="model" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(erro))
+            {
+                <div class="alert alert-danger">@erro</div>
+            }
+
+            <div class="form-group">
+                <label>Email</label>
+                <input class="form-control" type="email" @bind="model.Email" placeholder="seu@email.com" />
+            </div>
+
+            <div class="form-group mt-3">
+                <label>Senha</label>
+                <input class="form-control" type="password" @bind="model.Senha" placeholder="••••••••" />
+            </div>
+
+            <button class="btn btn-primary w-100 mt-4" type="submit" disabled="@carregando">
+                @if (carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Entrar
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Models.LoginModel model = new();
+    private string erro = "";
+    private bool carregando;
+
+    private async Task HandleLogin()
+    {
+        carregando = true;
+        erro = "";
+        var (sucesso, token, erroMsg) = await Api.LoginAsync(model);
+        if (sucesso && token is not null)
+        {
+            await LocalStorage.SetItemAsStringAsync("authToken", token.AccessToken);
+            ((AppAuthStateProvider)AuthStateProvider).NotificarLogin(token.AccessToken);
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            erro = erroMsg ?? "Erro ao fazer login.";
+        }
+        carregando = false;
+    }
+}

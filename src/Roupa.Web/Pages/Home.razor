@@ -1,0 +1,129 @@
+@page "/"
+@attribute [Authorize]
+@inject ApiService Api
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="dashboard-header mb-4">
+    <h1>Dashboard</h1>
+    <p class="text-muted">Visão geral da produção</p>
+</div>
+
+@if (carregando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div style="font-size:2rem">👥</div>
+                    <div class="fs-3 fw-bold text-primary">@totalClientes</div>
+                    <div class="text-muted small">Clientes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div style="font-size:2rem">🎨</div>
+                    <div class="fs-3 fw-bold text-success">@totalLayouts</div>
+                    <div class="text-muted small">Layouts</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div style="font-size:2rem">📦</div>
+                    <div class="fs-3 fw-bold text-warning">@pedidosAbertos</div>
+                    <div class="text-muted small">Pedidos Abertos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div style="font-size:2rem">🏭</div>
+                    <div class="fs-3 fw-bold text-danger">@pedidosProducao</div>
+                    <div class="text-muted small">Em Produção</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Últimos Pedidos</h5>
+            <a href="/pedidos" class="btn btn-sm btn-outline-primary">Ver todos</a>
+        </div>
+        <div class="card-body p-0">
+            @if (!ultimosPedidos.Any())
+            {
+                <div class="text-center py-4 text-muted">Nenhum pedido encontrado.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in ultimosPedidos)
+                            {
+                                <tr style="cursor:pointer" @onclick="@(() => Nav.NavigateTo($"/pedidos/{p.Id}"))">
+                                    <td class="fw-semibold">@p.Numero</td>
+                                    <td>@p.NomeCliente</td>
+                                    <td><span class="badge @BadgeStatus(p.Status)">@p.StatusNome</span></td>
+                                    <td>@p.Total.ToString("C2")</td>
+                                    <td>@p.CriadoEm.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] NavigationManager Nav { get; set; } = default!;
+    private bool carregando = true;
+    private int totalClientes, totalLayouts, pedidosAbertos, pedidosProducao;
+    private List<Models.PedidoDto> ultimosPedidos = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var clientes = await Api.ListarClientesAsync();
+        var layouts = await Api.ListarLayoutsAsync();
+        var pedidos = await Api.ListarPedidosAsync();
+        totalClientes = clientes.Count;
+        totalLayouts = layouts.Count;
+        pedidosAbertos = pedidos.Count(p => p.Status == Models.StatusPedido.Rascunho || p.Status == Models.StatusPedido.Confirmado);
+        pedidosProducao = pedidos.Count(p => p.Status == Models.StatusPedido.EmProducao);
+        ultimosPedidos = pedidos.Take(5).ToList();
+        carregando = false;
+    }
+
+    private static string BadgeStatus(Models.StatusPedido s) => s switch
+    {
+        Models.StatusPedido.Rascunho   => "bg-secondary",
+        Models.StatusPedido.Confirmado => "bg-primary",
+        Models.StatusPedido.EmProducao => "bg-warning text-dark",
+        Models.StatusPedido.Concluido  => "bg-success",
+        Models.StatusPedido.Cancelado  => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
