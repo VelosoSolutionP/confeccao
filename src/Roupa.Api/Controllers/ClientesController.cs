@@ -39,4 +39,22 @@ public class ClientesController : ControllerBase
         if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Dados!.Id }, result.Dados);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarClienteDto dto)
+    {
+        var result = await _mediator.Send(new AtualizarClienteCommand(id, dto.RazaoSocial, dto.NomeFantasia, dto.Email, dto.Telefone));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return Ok(result.Dados);
+    }
+
+    [HttpPatch("{id:guid}/toggle-ativo")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> ToggleAtivo(Guid id)
+    {
+        var result = await _mediator.Send(new ToggleAtivoClienteCommand(id));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return NoContent();
+    }
 }

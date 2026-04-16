@@ -43,10 +43,10 @@ public class ApiService
     }
 
     // ── CLIENTES ───────────────────────────────────────────────────
-    public async Task<List<ClienteDto>> ListarClientesAsync()
+    public async Task<List<ClienteDto>> ListarClientesAsync(bool apenasAtivos = true)
     {
         await PrepararHeaderAsync();
-        return await _http.GetFromJsonAsync<List<ClienteDto>>("api/clientes") ?? [];
+        return await _http.GetFromJsonAsync<List<ClienteDto>>($"api/clientes?apenasAtivos={apenasAtivos}") ?? [];
     }
 
     public async Task<ClienteDto?> ObterClienteAsync(Guid id)
@@ -63,6 +63,25 @@ public class ApiService
             return (true, await resp.Content.ReadFromJsonAsync<ClienteDto>(), null);
         var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
         return (false, null, err?.Erro ?? "Erro ao criar cliente.");
+    }
+
+    public async Task<(bool sucesso, ClienteDto? dados, string? erro)> AtualizarClienteAsync(Guid id, AtualizarClienteModel model)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PutAsJsonAsync($"api/clientes/{id}", model);
+        if (resp.IsSuccessStatusCode)
+            return (true, await resp.Content.ReadFromJsonAsync<ClienteDto>(), null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, null, err?.Erro ?? "Erro ao atualizar cliente.");
+    }
+
+    public async Task<(bool sucesso, string? erro)> ToggleAtivoClienteAsync(Guid id)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PatchAsync($"api/clientes/{id}/toggle-ativo", null);
+        if (resp.IsSuccessStatusCode) return (true, null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, err?.Erro ?? "Erro ao alterar status.");
     }
 
     // ── LAYOUTS ────────────────────────────────────────────────────
@@ -109,6 +128,44 @@ public class ApiService
             return (true, await resp.Content.ReadFromJsonAsync<ParceiroDto>(), null);
         var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
         return (false, null, err?.Erro ?? "Erro ao criar parceiro.");
+    }
+
+    public async Task<(bool sucesso, ParceiroDto? dados, string? erro)> AtualizarParceiroAsync(Guid id, AtualizarParceiroModel model)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PutAsJsonAsync($"api/parceiros/{id}", model);
+        if (resp.IsSuccessStatusCode)
+            return (true, await resp.Content.ReadFromJsonAsync<ParceiroDto>(), null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, null, err?.Erro ?? "Erro ao atualizar parceiro.");
+    }
+
+    public async Task<(bool sucesso, string? erro)> ToggleAtivoParceiroAsync(Guid id)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PatchAsync($"api/parceiros/{id}/toggle-ativo", null);
+        if (resp.IsSuccessStatusCode) return (true, null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, err?.Erro ?? "Erro ao alterar status.");
+    }
+
+    public async Task<(bool sucesso, LayoutDto? dados, string? erro)> AtualizarLayoutAsync(Guid id, CriarLayoutModel model)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PutAsJsonAsync($"api/layouts/{id}", model);
+        if (resp.IsSuccessStatusCode)
+            return (true, await resp.Content.ReadFromJsonAsync<LayoutDto>(), null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, null, err?.Erro ?? "Erro ao atualizar ficha.");
+    }
+
+    public async Task<(bool sucesso, string? erro)> ExcluirLayoutAsync(Guid id)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.DeleteAsync($"api/layouts/{id}");
+        if (resp.IsSuccessStatusCode) return (true, null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, err?.Erro ?? "Erro ao excluir ficha.");
     }
 
     // ── PEDIDOS ────────────────────────────────────────────────────

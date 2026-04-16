@@ -1,0 +1,388 @@
+@page "/studio"
+@attribute [Authorize]
+@inject ApiService Api
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<PageTitle>Studio — Provador Virtual</PageTitle>
+
+<div class="studio-root">
+
+    <!-- ── TOP BAR ── -->
+    <div class="studio-topbar">
+        <div class="studio-brand">
+            <i class="bi bi-controller"></i>
+            <span>Studio</span>
+            <span class="studio-brand-sub">Provador Virtual</span>
+        </div>
+        <div class="studio-topbar-center">
+            @if (avatarAtual is not null && fichaAtual is not null)
+            {
+                <span class="studio-status">
+                    <i class="bi bi-person-check-fill" style="color:#a78bfa"></i>
+                    @avatarAtual.Nome
+                    <i class="bi bi-chevron-right" style="color:rgba(255,255,255,.3);font-size:.7rem"></i>
+                    <i class="bi bi-shirt-fill" style="color:#34d399"></i>
+                    @fichaAtual.Modelo
+                </span>
+            }
+            else if (avatarAtual is not null)
+            {
+                <span class="studio-status">
+                    <i class="bi bi-person-check-fill" style="color:#a78bfa"></i>
+                    @avatarAtual.Nome — escolha uma peça no arsenal
+                </span>
+            }
+            else
+            {
+                <span class="studio-status" style="color:rgba(255,255,255,.35)">
+                    <i class="bi bi-arrow-left"></i> Selecione um personagem para começar
+                </span>
+            }
+        </div>
+        <button class="studio-sair" @onclick='() => Nav.NavigateTo("/layouts")'>
+            <i class="bi bi-x-lg"></i> Sair
+        </button>
+    </div>
+
+    <div class="studio-body">
+
+        <!-- ══ LEFT: CHARACTER SELECT ══ -->
+        <div class="studio-characters">
+            <div class="studio-panel-title">
+                <i class="bi bi-people-fill"></i> Personagens
+            </div>
+            @foreach (var av in Avatares)
+            {
+                var ativo = avatarAtual?.Id == av.Id;
+                <div class="studio-char-card @(ativo ? "ativo" : "")" @onclick="() => SelecionarAvatar(av)">
+                    <div class="studio-char-portrait">
+                        <img src="@AvatarPortraitUrl(av)"
+                             alt="@av.Nome"
+                             onerror="this.src='/img/placeholder.svg'"
+                             loading="lazy" />
+                        @if (ativo)
+                        {
+                            <div class="studio-char-sel-badge"><i class="bi bi-check-lg"></i></div>
+                        }
+                    </div>
+                    <div class="studio-char-info">
+                        <div class="studio-char-nome">@av.Nome</div>
+                        <div class="studio-char-tipo">@av.Descricao</div>
+                    </div>
+                    @if (ativo) { <i class="bi bi-chevron-right studio-char-arrow"></i> }
+                </div>
+            }
+        </div>
+
+        <!-- ══ CENTER: STAGE ══ -->
+        <div class="studio-stage">
+            @if (avatarAtual is null)
+            {
+                <div class="studio-empty">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <p>Selecione um personagem</p>
+                    <span>Use o painel à esquerda para escolher quem vai experimentar as roupas</span>
+                </div>
+            }
+            else
+            {
+                <div class="studio-palco">
+                    <div class="studio-palco-img-wrap">
+                        @if (gerando)
+                        {
+                            <div class="studio-gerando">
+                                <div class="studio-gerando-spinner"></div>
+                                <span>Gerando visual...</span>
+                            </div>
+                        }
+                        <img src="@imgPalco"
+                             alt="@avatarAtual.Nome"
+                             class="studio-palco-img @(gerando ? "blur" : "")"
+                             onerror="this.src='/img/placeholder.svg'" />
+                        @if (fichaAtual is not null && !gerando)
+                        {
+                            <div class="studio-outfit-badge">
+                                <i class="bi bi-shirt-fill"></i> @fichaAtual.Modelo
+                            </div>
+                        }
+                    </div>
+                    <div class="studio-palco-nome">@avatarAtual.Nome</div>
+                </div>
+
+                @if (fichaAtual is not null && !gerando)
+                {
+                    <div class="studio-acoes">
+                        <button class="studio-btn-gerar" @onclick="GerarTryOn" disabled="@gerando">
+                            <i class="bi bi-magic"></i> Regerar
+                        </button>
+                        <a class="studio-btn-download"
+                           href="@imgPalco"
+                           download="@($"{avatarAtual.Nome}_{fichaAtual.Modelo}.jpg")"
+                           target="_blank">
+                            <i class="bi bi-download"></i> Baixar Imagem
+                        </a>
+                        <button class="studio-btn-pdf" @onclick="ImprimirProposta">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Proposta PDF
+                        </button>
+                    </div>
+                }
+                else if (fichaAtual is null)
+                {
+                    <div class="studio-hint">
+                        <i class="bi bi-arrow-right"></i>
+                        Escolha uma peça no arsenal ao lado
+                    </div>
+                }
+            }
+
+            @if (!string.IsNullOrEmpty(erroStudio))
+            {
+                <div class="studio-erro">@erroStudio</div>
+            }
+        </div>
+
+        <!-- ══ RIGHT: ARSENAL ══ -->
+        <div class="studio-arsenal">
+            <div class="studio-panel-title">
+                <i class="bi bi-bag-fill"></i> Arsenal
+                @if (carregando) { <span class="studio-spinner-tiny"></span> }
+            </div>
+
+            @if (!carregando && !fichas.Any())
+            {
+                <div style="color:rgba(255,255,255,.3);font-size:.78rem;padding:.5rem .75rem">
+                    Nenhuma ficha. <a href="/layouts" style="color:#a78bfa">Criar →</a>
+                </div>
+            }
+
+            @foreach (var f in fichas)
+            {
+                var sel = fichaAtual?.Id == f.Id;
+                <div class="studio-arsenal-item @(sel ? "ativo" : "")"
+                     @onclick="() => SelecionarFicha(f)">
+                    <img src="@PollinationsThumbnail(f)" alt="@f.Modelo"
+                         onerror="this.src='/img/placeholder.svg'" loading="lazy" />
+                    <div class="studio-arsenal-info">
+                        <div class="studio-arsenal-nome">@f.Modelo</div>
+                        <div class="studio-arsenal-tipo">@NomeTipo(f.TipoProduto)</div>
+                        <div class="studio-arsenal-cores">
+                            @foreach (var hex in CoresHex(f.Cores).Take(3))
+                            {
+                                <span style="background:@hex"></span>
+                            }
+                        </div>
+                    </div>
+                    @if (sel) { <i class="bi bi-check-circle-fill studio-arsenal-check"></i> }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- PROPOSTA PRINT (visível apenas ao imprimir) -->
+@if (avatarAtual is not null && fichaAtual is not null)
+{
+    <div id="proposta-print" class="proposta-print">
+        <div class="proposta-header">
+            <div class="proposta-logo"><i class="bi bi-scissors"></i> Roupa Solution</div>
+            <div class="proposta-titulo">PROPOSTA DE UNIFORME</div>
+            <div class="proposta-data">@DateTime.Now.ToString("dd/MM/yyyy")</div>
+        </div>
+        <div class="proposta-body">
+            <img src="@imgPalco" class="proposta-avatar-img" />
+            <div class="proposta-detalhes">
+                <h2>@fichaAtual.Modelo</h2>
+                <div class="proposta-row"><b>Personagem:</b> @avatarAtual.Nome (@avatarAtual.Descricao)</div>
+                <div class="proposta-row"><b>Tipo:</b> @NomeTipo(fichaAtual.TipoProduto)</div>
+                <div class="proposta-row"><b>Tecido:</b> @fichaAtual.Tecido</div>
+                <div class="proposta-row"><b>Cores:</b> @fichaAtual.Cores</div>
+                <div class="proposta-row"><b>Logomarca:</b> @NomeLogomarca(fichaAtual.TipoLogomarca) — @fichaAtual.PosicaoLogomarca</div>
+                @if (!string.IsNullOrEmpty(fichaAtual.Outros))
+                {
+                    <div class="proposta-row"><b>Obs:</b> @fichaAtual.Outros</div>
+                }
+            </div>
+        </div>
+        <div class="proposta-footer">Roupa Solution — Gestão Têxtil Profissional</div>
+    </div>
+}
+
+@code {
+    // ── Avatar definitions ─────────────────────
+    record AvatarDef(string Id, string Nome, string Descricao, string Prompt, int Seed);
+
+    static readonly AvatarDef[] Avatares =
+    [
+        new("ketlen", "Ketlen", "Modelo Feminino",
+            "young Brazilian woman, light brown skin, long dark wavy hair, slim athletic build, fashion model, confident smile, looking at camera, front view, white seamless studio background, full body, professional fashion photography, sharp focus, 8k",
+            3001),
+        new("jorge", "Jorge", "Modelo Masculino",
+            "Black Brazilian man, athletic muscular build, short fade haircut, strong confident expression, fashion model, front view, white seamless studio background, full body, professional fashion photography, sharp focus, 8k",
+            3002),
+        new("micaela", "Micaela", "Modelo Feminina Negra",
+            "Black Brazilian woman, natural curly afro hair, medium build, confident warm smile, fashion model, front view, white seamless studio background, full body, professional fashion photography, sharp focus, 8k",
+            3003),
+        new("veloso", "Veloso", "Modelo Nerd",
+            "young nerdy Brazilian man with round glasses, slightly messy brown hair, slim build, intelligent friendly grin, casual intellectual vibe, front view, white seamless studio background, full body, professional photography, sharp focus, 8k",
+            3004),
+    ];
+
+    // ── URL helpers ────────────────────────────
+    static string AvatarPortraitUrl(AvatarDef av) =>
+        "https://image.pollinations.ai/prompt/" +
+        Uri.EscapeDataString(av.Prompt) +
+        "?width=200&height=280&model=flux&seed=" + av.Seed + "&nologo=true";
+
+    static string AvatarFullUrl(AvatarDef av) =>
+        "https://image.pollinations.ai/prompt/" +
+        Uri.EscapeDataString(av.Prompt) +
+        "?width=420&height=640&model=flux&seed=" + (av.Seed + 100) + "&nologo=true";
+
+    static string TryOnUrl(AvatarDef av, Models.LayoutDto f)
+    {
+        var tipo    = NomeTipoEn(f.TipoProduto);
+        var logoTipo = NomeLogomarcaEn(f.TipoLogomarca);
+        var logo    = logoTipo + " logo on " + f.PosicaoLogomarca;
+        var avBase  = av.Prompt.Split(',')[0];
+        var prompt  = avBase + " wearing " + tipo + " in " + f.Cores.ToLower() + " color, " +
+                      f.Tecido + " fabric, " + logo +
+                      ", front view, white seamless studio background, full body, professional fashion photography, 8k";
+        var seed    = (av.Seed + f.Id.GetHashCode()) & 0x7FFFFFFF;
+        return "https://image.pollinations.ai/prompt/" +
+               Uri.EscapeDataString(prompt) +
+               "?width=420&height=640&model=flux&seed=" + seed + "&nologo=true";
+    }
+
+    static string PollinationsThumbnail(Models.LayoutDto f)
+    {
+        var tipo = NomeTipoEn(f.TipoProduto);
+        var p = "flat lay " + tipo + ", " + f.Cores.ToLower() + " color, isolated white background, product photography";
+        return "https://image.pollinations.ai/prompt/" +
+               Uri.EscapeDataString(p) +
+               "?width=100&height=120&model=flux&seed=" + (f.Id.GetHashCode() & 0x7FFFFFFF) + "&nologo=true";
+    }
+
+    static string NomeTipo(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.CamisaPolo  => "Camisa Polo",
+        Models.TipoProduto.CamisaMalha => "Camiseta Malha",
+        Models.TipoProduto.Jaleco      => "Jaleco",
+        Models.TipoProduto.Calca       => "Calça",
+        Models.TipoProduto.Bermuda     => "Bermuda",
+        Models.TipoProduto.Agasalho    => "Agasalho",
+        Models.TipoProduto.Colete      => "Colete",
+        _ => t.ToString()
+    };
+
+    static string NomeTipoEn(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.CamisaPolo  => "polo shirt",
+        Models.TipoProduto.CamisaMalha => "t-shirt",
+        Models.TipoProduto.Jaleco      => "work jacket",
+        Models.TipoProduto.Calca       => "pants",
+        Models.TipoProduto.Bermuda     => "shorts",
+        Models.TipoProduto.Agasalho    => "tracksuit jacket",
+        Models.TipoProduto.Colete      => "vest",
+        _ => t.ToString().ToLower()
+    };
+
+    static string NomeLogomarca(Models.TipoLogomarca t) => t switch
+    {
+        Models.TipoLogomarca.Bordado    => "Bordado",
+        Models.TipoLogomarca.SilkScreen => "Silk Screen",
+        Models.TipoLogomarca.Sublimacao => "Sublimação",
+        Models.TipoLogomarca.Transfer   => "Transfer",
+        _ => t.ToString()
+    };
+
+    static string NomeLogomarcaEn(Models.TipoLogomarca t) => t switch
+    {
+        Models.TipoLogomarca.Bordado    => "embroidered",
+        Models.TipoLogomarca.SilkScreen => "silk screen printed",
+        Models.TipoLogomarca.Sublimacao => "sublimation printed",
+        Models.TipoLogomarca.Transfer   => "heat transfer",
+        _ => ""
+    };
+
+    static string[] CoresHex(string cores) =>
+        cores.ToLower().Split([" e ", " & ", ",", "/"], StringSplitOptions.RemoveEmptyEntries)
+             .Select(c => c.Trim() switch
+             {
+                 var x when x.Contains("bran")  => "#FFFFFF",
+                 var x when x.Contains("pre")   => "#111111",
+                 var x when x.Contains("cza") || x.Contains("gray") => "#9CA3AF",
+                 var x when x.Contains("azul") && x.Contains("mar") => "#1E3A5F",
+                 var x when x.Contains("azul")  => "#3B82F6",
+                 var x when x.Contains("verm")  => "#DC2626",
+                 var x when x.Contains("bord") || x.Contains("vinh") => "#7F1D1D",
+                 var x when x.Contains("rosa")  => "#F9A8D4",
+                 var x when x.Contains("verde") => "#16A34A",
+                 var x when x.Contains("amar")  => "#EAB308",
+                 var x when x.Contains("rox")   => "#7C3AED",
+                 var x when x.Contains("mar")   => "#92400E",
+                 _ => "#6B7280"
+             }).ToArray();
+
+    // ── State ──────────────────────────────────
+    List<Models.LayoutDto> fichas = [];
+    AvatarDef? avatarAtual;
+    Models.LayoutDto? fichaAtual;
+    string imgPalco = "";
+    bool carregando = true, gerando;
+    string erroStudio = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        fichas = await Api.ListarLayoutsAsync();
+        carregando = false;
+    }
+
+    void SelecionarAvatar(AvatarDef av)
+    {
+        avatarAtual = av;
+        fichaAtual = null;
+        imgPalco = AvatarFullUrl(av);
+        erroStudio = "";
+    }
+
+    void SelecionarFicha(Models.LayoutDto f)
+    {
+        if (avatarAtual is null) return;
+        fichaAtual = f;
+        erroStudio = "";
+        _ = GerarTryOn();
+    }
+
+    async Task GerarTryOn()
+    {
+        if (avatarAtual is null || fichaAtual is null) return;
+        gerando = true;
+        erroStudio = "";
+        StateHasChanged();
+
+        try
+        {
+            var urls = await JS.InvokeAsync<string[]?>(
+                "OutfitAnyone.gerar4Vistas",
+                NomeTipoEn(fichaAtual.TipoProduto),
+                fichaAtual.Cores,
+                fichaAtual.Tecido,
+                NomeLogomarcaEn(fichaAtual.TipoLogomarca) + " logo on " + fichaAtual.PosicaoLogomarca);
+
+            imgPalco = urls is not null && urls.Length > 0
+                ? urls[0]
+                : TryOnUrl(avatarAtual, fichaAtual);
+        }
+        catch
+        {
+            imgPalco = TryOnUrl(avatarAtual, fichaAtual);
+        }
+
+        gerando = false;
+        StateHasChanged();
+    }
+
+    async Task ImprimirProposta() =>
+        await JS.InvokeVoidAsync("window.print");
+}

@@ -20,3 +20,12 @@ public record CriarParceiroDto(
     string? Especialidade,
     string? Cidade,
     string? Observacoes);
+
+public record AtualizarParceiroDto(
+    string Nome,
+    string? CpfCnpj,
+    string? Telefone,
+    string? Email,
+    string? Especialidade,
+    string? Cidade,
+    string? Observacoes);

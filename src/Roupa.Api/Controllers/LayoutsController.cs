@@ -49,4 +49,25 @@ public class LayoutsController : ControllerBase
         if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Dados!.Id }, result.Dados);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] CriarLayoutDto dto)
+    {
+        var result = await _mediator.Send(new AtualizarLayoutCommand(
+            id, dto.Modelo, dto.Descricao, dto.TipoProduto,
+            dto.Tecido, dto.Cores, dto.TipoLogomarca, dto.PosicaoLogomarca,
+            dto.TamanhoLogomarca, dto.CorLogomarca, dto.Outros));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return Ok(result.Dados);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> Excluir(Guid id)
+    {
+        var result = await _mediator.Send(new ExcluirLayoutCommand(id));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return NoContent();
+    }
 }

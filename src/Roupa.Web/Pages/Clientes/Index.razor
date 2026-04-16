@@ -10,17 +10,24 @@
         <div class="page-title">Clientes</div>
         <div class="page-subtitle">Gerencie os clientes e suas fichas de uniformes</div>
     </div>
-    <button class="btn-primary-modern" @onclick="AbrirDrawer">
-        <i class="bi bi-plus-lg"></i> Novo Cliente
-    </button>
+    <div style="display:flex;gap:.5rem;align-items:center">
+        <label class="toggle-label">
+            <input type="checkbox" @bind="mostrarInativos" @bind:after="CarregarAsync" />
+            <span>Ver inativos</span>
+        </label>
+        <button class="btn-primary-modern" @onclick="AbrirDrawer">
+            <i class="bi bi-plus-lg"></i> Novo Cliente
+        </button>
+    </div>
 </div>
 
+<!-- DRAWER CRIAR / EDITAR -->
 @if (mostrarDrawer)
 {
     <div class="drawer-overlay" @onclick="FecharDrawer"></div>
     <div class="drawer">
         <div class="drawer-header">
-            <span class="drawer-title">Novo Cliente</span>
+            <span class="drawer-title">@(editando is not null ? "Editar Cliente" : "Novo Cliente")</span>
             <button class="drawer-close" @onclick="FecharDrawer"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="drawer-body form-modern">
@@ -34,51 +41,88 @@
                 <div class="col-12">
                     <div class="form-group">
                         <label>Razão Social *</label>
-                        <input class="input-field" @bind="novoCliente.RazaoSocial" placeholder="Nome jurídico da empresa" />
+                        <input class="input-field @(invalidos.Contains("razao") ? "invalido" : "")"
+                               @bind="form.RazaoSocial" placeholder="Nome jurídico da empresa" />
+                        @if (invalidos.Contains("razao")) { <span class="campo-erro">Campo obrigatório</span> }
                     </div>
                 </div>
                 <div class="col-12">
                     <div class="form-group">
                         <label>Nome Fantasia *</label>
-                        <input class="input-field" @bind="novoCliente.NomeFantasia" placeholder="Nome comercial" />
+                        <input class="input-field @(invalidos.Contains("fantasia") ? "invalido" : "")"
+                               @bind="form.NomeFantasia" placeholder="Nome comercial" />
+                        @if (invalidos.Contains("fantasia")) { <span class="campo-erro">Campo obrigatório</span> }
                     </div>
                 </div>
-                <div class="col-12">
-                    <div class="form-group">
-                        <label>CNPJ *</label>
-                        <input class="input-field" value="@novoCliente.Cnpj"
-                               @oninput="MascararCnpj" placeholder="00.000.000/0001-00"
-                               maxlength="18" inputmode="numeric" />
+                @if (editando is null)
+                {
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>CNPJ *</label>
+                            <input class="input-field @(invalidos.Contains("cnpj") ? "invalido" : "")"
+                                   value="@cnpjTemp"
+                                   @oninput="MascararCnpj" placeholder="00.000.000/0001-00"
+                                   maxlength="18" inputmode="numeric" />
+                            @if (invalidos.Contains("cnpj")) { <span class="campo-erro">CNPJ obrigatório</span> }
+                        </div>
                     </div>
-                </div>
-                <div class="col-12">
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>CNPJ</label>
+                            <input class="input-field" value="@editando.Cnpj" disabled />
+                        </div>
+                    </div>
+                }
+                <div class="col-6">
                     <div class="form-group">
                         <label>Telefone</label>
-                        <input class="input-field" value="@novoCliente.Telefone"
+                        <input class="input-field" value="@form.Telefone"
                                @oninput="MascararTelefone" placeholder="(00) 00000-0000"
                                maxlength="15" inputmode="numeric" />
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-6">
                     <div class="form-group">
                         <label>E-mail</label>
-                        <input class="input-field" type="email" @bind="novoCliente.Email" placeholder="contato@empresa.com" />
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="form-group">
-                        <label>Endereço</label>
-                        <input class="input-field" @bind="novoCliente.Endereco" placeholder="Rua, número, bairro" />
+                        <input class="input-field" type="email" @bind="form.Email" placeholder="contato@empresa.com" />
                     </div>
                 </div>
             </div>
         </div>
         <div class="drawer-footer">
             <button class="btn-ghost" @onclick="FecharDrawer">Cancelar</button>
-            <button class="btn-primary-modern" @onclick="SalvarCliente" disabled="@salvando">
+            <button class="btn-primary-modern" @onclick="Salvar" disabled="@salvando">
                 @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
                 else { <i class="bi bi-check-lg"></i> }
-                Salvar
+                @(editando is not null ? "Salvar Alterações" : "Salvar")
+            </button>
+        </div>
+    </div>
+}
+
+<!-- CONFIRM TOGGLE -->
+@if (confirmToggle is not null)
+{
+    <div class="drawer-overlay" @onclick="() => confirmToggle = null"></div>
+    <div class="confirm-modal">
+        <div class="confirm-icon @(confirmToggle.Ativo ? "danger" : "success")">
+            <i class="bi @(confirmToggle.Ativo ? "bi-slash-circle" : "bi-check-circle")"></i>
+        </div>
+        <div class="confirm-title">@(confirmToggle.Ativo ? "Bloquear cliente?" : "Reativar cliente?")</div>
+        <div class="confirm-msg">
+            @(confirmToggle.Ativo
+                ? $"O cliente \"{confirmToggle.NomeFantasia}\" será bloqueado e não aparecerá nas listagens."
+                : $"O cliente \"{confirmToggle.NomeFantasia}\" será reativado.")
+        </div>
+        <div class="confirm-btns">
+            <button class="btn-ghost" @onclick="() => confirmToggle = null">Cancelar</button>
+            <button class="@(confirmToggle.Ativo ? "btn-danger-modern" : "btn-primary-modern")"
+                    @onclick="ExecutarToggle" disabled="@salvando">
+                @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
+                @(confirmToggle.Ativo ? "Bloquear" : "Reativar")
             </button>
         </div>
     </div>
@@ -86,9 +130,7 @@
 
 @if (carregando)
 {
-    <div class="loading-center">
-        <div class="spinner-border text-primary"></div>
-    </div>
+    <div class="loading-center"><div class="spinner-border text-primary"></div></div>
 }
 else if (!clientes.Any())
 {
@@ -108,7 +150,7 @@ else
         <div class="card-header-modern">
             <span class="card-title">
                 <i class="bi bi-buildings text-primary"></i>
-                @clientes.Count cliente@(clientes.Count != 1 ? "s" : "") cadastrado@(clientes.Count != 1 ? "s" : "")
+                @clientes.Count cliente@(clientes.Count != 1 ? "s" : "")
             </span>
         </div>
         <div class="table-responsive">
@@ -118,28 +160,47 @@ else
                         <th>Empresa</th>
                         <th>CNPJ</th>
                         <th>Contato</th>
-                        <th>Telefone</th>
+                        <th>Status</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var c in clientes)
                     {
-                        <tr>
+                        <tr class="@(!c.Ativo ? "row-inativo" : "")">
                             <td>
                                 <div class="fw-medium">@c.NomeFantasia</div>
                                 <div style="font-size:.78rem;color:var(--surface-400)">@c.RazaoSocial</div>
                             </td>
                             <td style="font-family:monospace;letter-spacing:.03em">@c.Cnpj</td>
-                            <td>@(c.Email ?? "—")</td>
-                            <td>@(c.Telefone ?? "—")</td>
+                            <td>
+                                <div>@(c.Email ?? "—")</div>
+                                <div style="font-size:.78rem;color:var(--surface-400)">@(c.Telefone ?? "")</div>
+                            </td>
+                            <td>
+                                @if (c.Ativo)
+                                { <span class="badge-modern success">Ativo</span> }
+                                else
+                                { <span class="badge-modern draft">Bloqueado</span> }
+                            </td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn-table primary" @onclick="@(() => Nav.NavigateTo($"/layouts?clienteId={c.Id}"))">
-                                        <i class="bi bi-palette2"></i> Layouts
+                                    <button class="btn-table primary" title="Fichas"
+                                            @onclick="@(() => Nav.NavigateTo($"/layouts?clienteId={c.Id}"))">
+                                        <i class="bi bi-palette2"></i>
                                     </button>
-                                    <button class="btn-table secondary" @onclick="@(() => Nav.NavigateTo($"/pedidos?clienteId={c.Id}"))">
-                                        <i class="bi bi-bag-check"></i> Pedidos
+                                    <button class="btn-table secondary" title="Pedidos"
+                                            @onclick="@(() => Nav.NavigateTo($"/pedidos?clienteId={c.Id}"))">
+                                        <i class="bi bi-bag-check"></i>
+                                    </button>
+                                    <button class="btn-table info" title="Editar"
+                                            @onclick="() => AbrirEditar(c)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn-table @(c.Ativo ? "danger" : "success")"
+                                            title="@(c.Ativo ? "Bloquear" : "Reativar")"
+                                            @onclick="() => confirmToggle = c">
+                                        <i class="bi @(c.Ativo ? "bi-slash-circle" : "bi-check-circle")"></i>
                                     </button>
                                 </div>
                             </td>
@@ -153,8 +214,13 @@ else
 
 @code {
     private List<Models.ClienteDto> clientes = [];
-    private Models.CriarClienteModel novoCliente = new();
-    private bool carregando = true, mostrarDrawer, salvando;
+    private Models.ClienteDto? editando;
+    private Models.ClienteDto? confirmToggle;
+
+    private Models.AtualizarClienteModel form = new();
+    private string cnpjTemp = "";
+    private HashSet<string> invalidos = [];
+    private bool carregando = true, mostrarDrawer, salvando, mostrarInativos;
     private string erroForm = "";
 
     protected override async Task OnInitializedAsync()
@@ -164,17 +230,35 @@ else
     }
 
     private async Task CarregarAsync() =>
-        clientes = await Api.ListarClientesAsync();
+        clientes = await Api.ListarClientesAsync(apenasAtivos: !mostrarInativos);
 
-    private void AbrirDrawer() { mostrarDrawer = true; erroForm = ""; novoCliente = new(); }
+    private void AbrirDrawer()
+    {
+        editando = null;
+        form = new();
+        cnpjTemp = "";
+        invalidos.Clear();
+        erroForm = "";
+        mostrarDrawer = true;
+    }
+
+    private void AbrirEditar(Models.ClienteDto c)
+    {
+        editando = c;
+        form = new() { RazaoSocial = c.RazaoSocial, NomeFantasia = c.NomeFantasia, Email = c.Email, Telefone = c.Telefone };
+        invalidos.Clear();
+        erroForm = "";
+        mostrarDrawer = true;
+    }
+
     private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; }
 
     private void MascararCnpj(ChangeEventArgs e)
     {
         var digits = new string((e.Value?.ToString() ?? "").Where(char.IsDigit).Take(14).ToArray());
-        novoCliente.Cnpj = digits.Length switch
+        cnpjTemp = digits.Length switch
         {
-            0 => "",
+            0     => "",
             <= 2  => digits,
             <= 5  => $"{digits[..2]}.{digits[2..]}",
             <= 8  => $"{digits[..2]}.{digits[2..5]}.{digits[5..]}",
@@ -186,7 +270,7 @@ else
     private void MascararTelefone(ChangeEventArgs e)
     {
         var digits = new string((e.Value?.ToString() ?? "").Where(char.IsDigit).Take(11).ToArray());
-        novoCliente.Telefone = digits.Length switch
+        form.Telefone = digits.Length switch
         {
             0     => "",
             <= 2  => $"({digits}",
@@ -196,17 +280,43 @@ else
         };
     }
 
-    private async Task SalvarCliente()
+    private async Task Salvar()
     {
-        salvando = true;
-        erroForm = "";
-        var (sucesso, _, erro) = await Api.CriarClienteAsync(novoCliente);
-        if (sucesso)
+        invalidos.Clear();
+        if (string.IsNullOrWhiteSpace(form.RazaoSocial))  invalidos.Add("razao");
+        if (string.IsNullOrWhiteSpace(form.NomeFantasia)) invalidos.Add("fantasia");
+        if (editando is null && string.IsNullOrWhiteSpace(cnpjTemp)) invalidos.Add("cnpj");
+        if (invalidos.Any()) return;
+
+        salvando = true; erroForm = "";
+
+        if (editando is not null)
         {
-            FecharDrawer();
-            await CarregarAsync();
+            var (ok, _, err) = await Api.AtualizarClienteAsync(editando.Id, form);
+            if (ok) { FecharDrawer(); await CarregarAsync(); }
+            else erroForm = err ?? "Erro ao atualizar.";
         }
-        else erroForm = erro ?? "Erro ao salvar.";
+        else
+        {
+            var criar = new Models.CriarClienteModel
+            {
+                RazaoSocial = form.RazaoSocial, NomeFantasia = form.NomeFantasia,
+                Cnpj = cnpjTemp, Email = form.Email, Telefone = form.Telefone
+            };
+            var (ok, _, err) = await Api.CriarClienteAsync(criar);
+            if (ok) { FecharDrawer(); await CarregarAsync(); }
+            else erroForm = err ?? "Erro ao criar.";
+        }
+
+        salvando = false;
+    }
+
+    private async Task ExecutarToggle()
+    {
+        if (confirmToggle is null) return;
+        salvando = true;
+        var (ok, _) = await Api.ToggleAtivoClienteAsync(confirmToggle.Id);
+        if (ok) { confirmToggle = null; await CarregarAsync(); }
         salvando = false;
     }
 }

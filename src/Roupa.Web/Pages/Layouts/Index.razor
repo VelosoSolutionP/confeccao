@@ -83,23 +83,42 @@
             </div>
 
             <div class="section-divider">Tecido & Cores</div>
-            <div class="row g-3">
-                <div class="col-6">
-                    <div class="form-group">
-                        <label>Tecido *</label>
-                        <input class="input-field @(invalidos.Contains("tecido") ? "invalido" : "")"
-                               @bind="novoLayout.Tecido" placeholder="Ex: Malha piquet PV 700" />
-                        @if (invalidos.Contains("tecido")) { <span class="campo-erro">Informe o tecido</span> }
-                    </div>
+            <div class="form-group">
+                <label>Tecido *</label>
+                <input class="input-field @(invalidos.Contains("tecido") ? "invalido" : "")"
+                       @bind="novoLayout.Tecido" placeholder="Ex: Malha piquet PV 700" />
+                @if (invalidos.Contains("tecido")) { <span class="campo-erro">Informe o tecido</span> }
+            </div>
+            <div class="form-group">
+                <label>Cores * <span style="font-weight:400;color:var(--surface-400)">(selecione até 3)</span></label>
+                <div class="cor-swatches @(invalidos.Contains("cores") ? "invalido" : "")">
+                    @foreach (var cor in TodasCores)
+                    {
+                        var sel = coresSel.Contains(cor.Nome);
+                        <button type="button"
+                                class="cor-swatch @(sel ? "selected" : "")"
+                                style="background:@cor.Hex;color:@cor.Fg;border-color:@(sel ? cor.Hex : "transparent")"
+                                title="@cor.Nome"
+                                @onclick="() => ToggleCor(cor.Nome)">
+                            @if (sel) { <i class="bi bi-check-lg"></i> }
+                        </button>
+                    }
                 </div>
-                <div class="col-6">
-                    <div class="form-group">
-                        <label>Cores *</label>
-                        <input class="input-field @(invalidos.Contains("cores") ? "invalido" : "")"
-                               @bind="novoLayout.Cores" placeholder="Ex: Vermelho e Branco" />
-                        @if (invalidos.Contains("cores")) { <span class="campo-erro">Informe as cores</span> }
+                @if (coresSel.Any())
+                {
+                    <div class="cor-tags">
+                        @foreach (var c in coresSel)
+                        {
+                            var hex = TodasCores.FirstOrDefault(x => x.Nome == c)?.Hex ?? "#888";
+                            <span class="cor-tag">
+                                <span style="background:@hex;width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:.25rem;border:1px solid rgba(0,0,0,.15)"></span>
+                                @c
+                                <button type="button" @onclick="() => coresSel.Remove(c)">×</button>
+                            </span>
+                        }
                     </div>
-                </div>
+                }
+                @if (invalidos.Contains("cores")) { <span class="campo-erro">Selecione ao menos uma cor</span> }
             </div>
 
             <div class="section-divider">Logomarca / Aplicação</div>
@@ -172,6 +191,25 @@
                     <i class="bi bi-magic"></i>
                     <span>Salvar & Gerar Avatar</span>
                 }
+            </button>
+        </div>
+    </div>
+}
+
+<!-- CONFIRM EXCLUIR FICHA -->
+@if (confirmExcluir is not null)
+{
+    <div class="drawer-overlay" @onclick="() => confirmExcluir = null"></div>
+    <div class="confirm-modal">
+        <div class="confirm-icon danger"><i class="bi bi-trash"></i></div>
+        <div class="confirm-title">Excluir ficha?</div>
+        <div class="confirm-msg">A ficha "@confirmExcluir.Modelo" será removida permanentemente. Esta ação não pode ser desfeita.</div>
+        <div class="confirm-btns">
+            <button class="btn-ghost" @onclick="() => confirmExcluir = null">Cancelar</button>
+            <button class="btn-danger-modern" @onclick="ExcluirFicha" disabled="@salvando">
+                @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
+                else { <i class="bi bi-trash"></i> }
+                Excluir
             </button>
         </div>
     </div>
@@ -367,6 +405,11 @@ else
                     <div class="gallery-overlay">
                         <i class="bi bi-eye-fill"></i> Ver ficha
                     </div>
+                    <button class="gallery-del-btn" title="Excluir ficha"
+                            @onclick:stopPropagation="true"
+                            @onclick="() => confirmExcluir = l">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
                 <div class="gallery-info">
                     <div class="gallery-modelo">@l.Modelo</div>
@@ -384,14 +427,42 @@ else
 @code {
     [SupplyParameterFromQuery] public string? ClienteId { get; set; }
 
+    record CorDef(string Nome, string Hex, string Fg);
+
+    static readonly CorDef[] TodasCores =
+    [
+        new("Branco",        "#FFFFFF", "#111111"),
+        new("Preto",         "#111111", "#FFFFFF"),
+        new("Cinza Claro",   "#D1D5DB", "#111111"),
+        new("Cinza Médio",   "#6B7280", "#FFFFFF"),
+        new("Azul Marinho",  "#1E3A5F", "#FFFFFF"),
+        new("Azul Royal",    "#1D4ED8", "#FFFFFF"),
+        new("Azul Claro",    "#3B82F6", "#FFFFFF"),
+        new("Vermelho",      "#DC2626", "#FFFFFF"),
+        new("Vinho/Bordô",   "#7F1D1D", "#FFFFFF"),
+        new("Rosa",          "#F9A8D4", "#111111"),
+        new("Verde",         "#16A34A", "#FFFFFF"),
+        new("Verde Militar", "#365314", "#FFFFFF"),
+        new("Amarelo",       "#EAB308", "#111111"),
+        new("Laranja",       "#EA580C", "#FFFFFF"),
+        new("Roxo",          "#7C3AED", "#FFFFFF"),
+        new("Lilás",         "#C4B5FD", "#111111"),
+        new("Bege/Cru",      "#D4A574", "#111111"),
+        new("Marrom",        "#92400E", "#FFFFFF"),
+    ];
+
     private List<Models.LayoutDto>  layouts    = [];
     private List<Models.ClienteDto> clientes   = [];
     private Models.CriarLayoutModel novoLayout = new();
     private Models.LayoutDto?       fichaViewer;
     private HashSet<string>         invalidos  = [];
+    private HashSet<string>         coresSel   = [];
     private Dictionary<string, string> medidas = [];
     private bool carregando = true, mostrarDrawer, salvando;
     private string erroForm = "";
+
+    // Exclusão
+    private Models.LayoutDto? confirmExcluir;
 
     // OutfitAnyone try-on state
     private bool   gerandoTryOn;
@@ -422,8 +493,17 @@ else
     {
         mostrarDrawer = true; erroForm = ""; invalidos.Clear();
         medidas = tamanhos.ToDictionary(t => t, _ => "");
+        coresSel.Clear();
         novoLayout = new();
         if (Guid.TryParse(ClienteId, out var cId)) novoLayout.ClienteId = cId;
+    }
+
+    private void ToggleCor(string nome)
+    {
+        if (coresSel.Contains(nome))
+            coresSel.Remove(nome);
+        else if (coresSel.Count < 3)
+            coresSel.Add(nome);
     }
 
     private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; invalidos.Clear(); }
@@ -474,9 +554,11 @@ else
         if (string.IsNullOrWhiteSpace(novoLayout.Modelo))     invalidos.Add("modelo");
         if (string.IsNullOrWhiteSpace(novoLayout.Descricao))  invalidos.Add("desc");
         if (string.IsNullOrWhiteSpace(novoLayout.Tecido))     invalidos.Add("tecido");
-        if (string.IsNullOrWhiteSpace(novoLayout.Cores))      invalidos.Add("cores");
+        if (!coresSel.Any())                                   invalidos.Add("cores");
         if (string.IsNullOrWhiteSpace(novoLayout.PosicaoLogomarca)) invalidos.Add("posicao");
         if (invalidos.Any()) return;
+
+        novoLayout.Cores = string.Join(" e ", coresSel);
 
         // Serializa medidas no campo Outros como JSON complementar
         var medidasStr = string.Join(", ", medidas.Where(m => !string.IsNullOrWhiteSpace(m.Value))
@@ -493,6 +575,15 @@ else
             await CarregarLayouts();
         }
         else erroForm = erro ?? "Erro ao salvar.";
+        salvando = false;
+    }
+
+    private async Task ExcluirFicha()
+    {
+        if (confirmExcluir is null) return;
+        salvando = true;
+        var (ok, _) = await Api.ExcluirLayoutAsync(confirmExcluir.Id);
+        if (ok) { confirmExcluir = null; await CarregarLayouts(); }
         salvando = false;
     }
 

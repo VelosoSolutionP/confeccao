@@ -39,4 +39,24 @@ public class ParceirosController : ControllerBase
         if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Dados!.Id }, result.Dados);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarParceiroDto dto)
+    {
+        var result = await _mediator.Send(new AtualizarParceiroCommand(
+            id, dto.Nome, dto.CpfCnpj, dto.Telefone, dto.Email,
+            dto.Especialidade, dto.Cidade, dto.Observacoes));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return Ok(result.Dados);
+    }
+
+    [HttpPatch("{id:guid}/toggle-ativo")]
+    [Authorize(Roles = "Admin,Operador")]
+    public async Task<IActionResult> ToggleAtivo(Guid id)
+    {
+        var result = await _mediator.Send(new ToggleAtivoParceiroCommand(id));
+        if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
+        return NoContent();
+    }
 }
