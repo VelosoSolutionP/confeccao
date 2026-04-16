@@ -2727,14 +2727,14 @@ code { color: #c02d76; }
 }
 
 /* ═══════════════════════════════════════════
-   VITRINE — Estilo e-commerce (Posthaus-like)
+   VITRINE v2 — SVG Personagem + Rotação 3D
 ═══════════════════════════════════════════ */
 
 /* ── Grid listagem ── */
 .vit-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
 }
 .vit-card {
     background: var(--surface-0);
@@ -2742,26 +2742,26 @@ code { color: #c02d76; }
     border: 1.5px solid var(--surface-200);
     overflow: hidden; cursor: pointer;
     box-shadow: var(--shadow-sm);
-    transition: transform .15s, box-shadow .15s, border-color .15s;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
 }
 .vit-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 32px rgba(0,0,0,.12);
+    box-shadow: 0 16px 40px rgba(0,0,0,.13);
     border-color: var(--brand-500);
 }
 .vit-card-img {
-    position: relative; height: 280px;
+    position: relative; height: 260px;
     background: var(--surface-100); overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
 }
-.vit-card-img img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-    transition: transform .3s;
+.vit-card-svg-wrap {
+    width: 160px; height: 240px;
+    pointer-events: none;
 }
-.vit-card:hover .vit-card-img img { transform: scale(1.05); }
 .vit-card-overlay {
     position: absolute; inset: 0;
     background: rgba(59,130,246,.78);
-    color: #fff; font-size: .88rem; font-weight: 700;
+    color: #fff; font-size: .9rem; font-weight: 700;
     display: flex; align-items: center; justify-content: center; gap: .4rem;
     opacity: 0; transition: opacity .2s;
 }
@@ -2773,233 +2773,209 @@ code { color: #c02d76; }
     padding: .18rem .5rem; border-radius: 999px;
     display: flex; align-items: center; gap: .2rem;
 }
-.vit-card-body { padding: .85rem 1rem .9rem; }
+.vit-card-body { padding: .8rem 1rem .9rem; }
 .vit-card-tipo {
     font-size: .65rem; font-weight: 800; letter-spacing: .07em;
     text-transform: uppercase; color: var(--brand-500); margin-bottom: .2rem;
 }
 .vit-card-nome {
-    font-size: .97rem; font-weight: 700; color: var(--surface-800);
+    font-size: .95rem; font-weight: 700; color: var(--surface-800);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.vit-card-cliente {
-    font-size: .75rem; color: var(--surface-400); margin-top: .15rem;
-}
-.vit-card-swatches {
-    display: flex; align-items: center; gap: .3rem; margin-top: .55rem; flex-wrap: wrap;
-}
+.vit-card-cliente { font-size: .75rem; color: var(--surface-400); margin-top: .1rem; }
+.vit-card-swatches { display: flex; gap: .3rem; margin-top: .5rem; flex-wrap: wrap; }
 .vit-mini-swatch {
-    width: 16px; height: 16px; border-radius: 50%;
+    width: 15px; height: 15px; border-radius: 50%;
     border: 1.5px solid rgba(0,0,0,.12);
     box-shadow: 0 1px 3px rgba(0,0,0,.15); display: inline-block;
-}
-.vit-mini-mais {
-    font-size: .68rem; color: var(--surface-400); font-weight: 600;
 }
 
 /* ── Skeleton ── */
 .vit-skeleton-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
 }
-.vit-skeleton-card {
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--surface-0);
-    border: 1px solid var(--surface-200);
-}
-.vit-sk-img {
-    height: 280px;
-    background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%);
-    background-size: 200% 100%; animation: shimmer 1.4s infinite;
-}
-.vit-sk-line {
-    height: 12px; margin: .75rem 1rem .35rem;
-    border-radius: 6px;
-    background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%);
-    background-size: 200% 100%; animation: shimmer 1.4s infinite;
-}
+.vit-skeleton-card { border-radius: var(--radius-lg); overflow: hidden; background: var(--surface-0); border: 1px solid var(--surface-200); }
+.vit-sk-img { height: 260px; background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%); background-size: 200% 100%; animation: vit-shimmer 1.4s infinite; }
+.vit-sk-line { height: 12px; margin: .75rem 1rem .35rem; border-radius: 6px; background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%); background-size: 200% 100%; animation: vit-shimmer 1.4s infinite; }
 .vit-sk-line.short { width: 55%; }
-.vit-sk-cores {
-    height: 14px; margin: .4rem 1rem .85rem;
-    width: 60px; border-radius: 999px;
-    background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%);
-    background-size: 200% 100%; animation: shimmer 1.4s infinite;
-}
-@keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
+.vit-sk-cores { height: 14px; margin: .4rem 1rem .85rem; width: 60px; border-radius: 999px; background: linear-gradient(90deg,var(--surface-100) 25%,var(--surface-200) 50%,var(--surface-100) 75%); background-size: 200% 100%; animation: vit-shimmer 1.4s infinite; }
+@keyframes vit-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* ── Página de detalhe (estilo Posthaus) ── */
+/* ── Breadcrumb ── */
 .vit-breadcrumb {
     display: flex; align-items: center; gap: .5rem;
     font-size: .82rem; margin-bottom: 1.25rem;
     flex-wrap: wrap; color: var(--surface-600);
 }
+.vit-breadcrumb span:first-child { color: var(--brand-500); cursor: pointer; }
 .vit-breadcrumb span:first-child:hover { text-decoration: underline; }
+.vit-breadcrumb i { color: var(--surface-400); font-size: .7rem; }
 
+/* ── Layout detalhe ── */
 .vit-detail-page { padding-bottom: 2rem; }
-
 .vit-detail-layout {
     display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 2.5rem;
-    align-items: flex-start;
+    grid-template-columns: 420px 1fr;
+    gap: 2.5rem; align-items: flex-start;
 }
 
-/* Galeria (coluna esquerda) */
-.vit-galeria {
-    display: flex; gap: .75rem;
+/* ── Coluna personagem ── */
+.vit-galeria-col {
+    display: flex; flex-direction: column; align-items: center; gap: .75rem;
     position: sticky; top: 1rem;
 }
-.vit-thumbs {
-    display: flex; flex-direction: column; gap: .5rem;
-    width: 80px; flex-shrink: 0;
-}
-.vit-thumb {
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    border: 2px solid var(--surface-200);
-    overflow: hidden; background: var(--surface-100);
-    transition: border-color .15s, box-shadow .15s;
-}
-.vit-thumb:hover { border-color: var(--brand-500); }
-.vit-thumb.ativo {
-    border-color: var(--brand-600);
-    box-shadow: 0 0 0 2px rgba(59,130,246,.25);
-}
-.vit-thumb img {
-    width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block;
-}
-.vit-thumb span {
-    display: block; text-align: center;
-    font-size: .55rem; font-weight: 700; letter-spacing: .04em;
-    text-transform: uppercase; padding: .15rem 0;
-    color: var(--surface-500);
-}
-
-.vit-main-img {
-    position: relative; flex: 1;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--surface-100);
+.vit-view-tabs {
+    display: flex; gap: .3rem; background: var(--surface-100);
+    padding: .25rem; border-radius: var(--radius-md);
     border: 1px solid var(--surface-200);
-    box-shadow: var(--shadow-md);
-    min-height: 520px;
 }
-.vit-main-img img {
-    width: 100%; min-height: 520px; max-height: 680px;
-    object-fit: cover; display: block;
-    transition: opacity .25s;
+.vit-view-tab {
+    padding: .3rem .7rem; border-radius: var(--radius-sm);
+    font-size: .75rem; font-weight: 600; cursor: pointer;
+    border: none; background: transparent; color: var(--surface-500);
+    transition: background .15s, color .15s;
 }
-.vit-main-badge {
-    position: absolute; top: .75rem; left: .75rem;
-    background: rgba(16,185,129,.9); color: #fff;
-    font-size: .72rem; font-weight: 700;
-    padding: .25rem .65rem; border-radius: 999px;
-    display: flex; align-items: center; gap: .25rem;
-}
-.vit-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(255,255,255,.9); border: 1px solid var(--surface-300);
-    color: var(--surface-700); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .9rem; box-shadow: var(--shadow-sm);
-    transition: background .15s, box-shadow .15s;
-}
-.vit-arrow:hover { background: #fff; box-shadow: var(--shadow-md); }
-.vit-arrow.left  { left: .6rem; }
-.vit-arrow.right { right: .6rem; }
+.vit-view-tab.ativo { background: var(--surface-0); color: var(--surface-800); box-shadow: var(--shadow-sm); }
+.vit-view-tab:hover:not(.ativo) { color: var(--surface-700); }
 
-/* Coluna direita: info */
-.vit-info-col {
-    display: flex; flex-direction: column; gap: 0;
-    padding-top: .25rem;
+/* Container do personagem SVG */
+.vit-char-container {
+    position: relative;
+    width: 100%; max-width: 340px;
+    background: radial-gradient(ellipse at 50% 35%, #f0f4ff 0%, #e8ecf8 60%, #dde2f0 100%);
+    border-radius: var(--radius-xl);
+    border: 1.5px solid var(--surface-200);
+    box-shadow: 0 12px 40px rgba(0,0,0,.1), 0 4px 12px rgba(0,0,0,.06);
+    overflow: hidden;
+    aspect-ratio: 2/3;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: .5rem;
 }
-.vit-info-tipo {
-    font-size: .7rem; font-weight: 800; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--brand-500);
-    margin-bottom: .35rem;
+
+/* ── Personagem SVG card (rotação 3D) ── */
+.char-wrapper {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    gap: .4rem;
+}
+
+.char-card {
+    width: 75%; flex: 1;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: none;
+}
+
+/* Animação spinning = rotateY contínuo */
+.char-card.spinning {
+    animation: char-spin360 3.6s linear infinite;
+}
+
+@keyframes char-spin360 {
+    0%   { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+/* Faces frente e costas */
+.char-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.char-face.front { /* frente: visível por padrão */ }
+.char-face.back  { transform: rotateY(180deg); }
+
+.char-face svg { width: 100%; height: 100%; }
+
+.char-label {
+    font-size: .72rem; color: var(--surface-500);
+    display: flex; align-items: center; gap: .3rem;
+    margin-bottom: .25rem; height: 18px;
+}
+.spin-icon { animation: spin360label .8s linear infinite; display: inline-block; }
+@keyframes spin360label { to { transform: rotate(360deg); } }
+
+/* Botão 360 */
+.vit-btn-360 {
+    display: flex; align-items: center; justify-content: center; gap: .45rem;
+    padding: .65rem 1.4rem; border-radius: var(--radius-md);
+    background: var(--surface-900); color: #fff;
+    font-size: .88rem; font-weight: 700; cursor: pointer;
+    border: none; width: 100%; max-width: 340px;
+    transition: background .15s, transform .1s;
+}
+.vit-btn-360:hover { background: var(--surface-800); }
+.vit-btn-360.ativo {
+    background: linear-gradient(135deg, var(--brand-600), var(--brand-700));
+}
+.vit-btn-360 i { font-size: 1rem; }
+
+/* ── Coluna info ── */
+.vit-info-col { padding-top: .25rem; }
+.vit-info-tag {
+    font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--brand-500); margin-bottom: .3rem;
 }
 .vit-info-nome {
-    font-size: 1.6rem; font-weight: 800; color: var(--surface-900);
-    line-height: 1.2; margin: 0 0 .4rem;
+    font-size: 1.7rem; font-weight: 800; color: var(--surface-900);
+    line-height: 1.2; margin: 0 0 .45rem;
 }
-.vit-info-cliente {
+.vit-info-sub {
     font-size: .82rem; color: var(--surface-500);
-    display: flex; align-items: center; gap: .35rem; margin-bottom: .2rem;
+    display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
 }
-.vit-info-tecido {
-    font-size: .82rem; color: var(--surface-500);
-    display: flex; align-items: center; gap: .35rem;
+.vit-aprovado-badge {
+    margin-top: .75rem;
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .35rem .85rem; border-radius: 999px;
+    background: rgba(16,185,129,.12); color: #059669;
+    font-size: .8rem; font-weight: 700;
+    border: 1px solid rgba(16,185,129,.3);
 }
-.vit-sep {
-    border: none; border-top: 1px solid var(--surface-200);
-    margin: 1rem 0;
-}
-.vit-cor-titulo {
-    font-size: .9rem; color: var(--surface-600); margin-bottom: .65rem;
-}
-.vit-cor-titulo strong { color: var(--surface-800); }
+.vit-sep { border: none; border-top: 1px solid var(--surface-200); margin: 1rem 0; }
 
-/* Swatches de cor (os círculos) */
-.vit-swatches {
-    display: flex; flex-wrap: wrap; gap: .5rem;
+/* Grupos de cor */
+.vit-cor-grupo { margin-bottom: .75rem; }
+.vit-cor-label {
+    font-size: .82rem; font-weight: 600; color: var(--surface-700);
+    margin-bottom: .5rem;
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
 }
+.vit-cor-selected {
+    padding: .18rem .65rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+.vit-swatches { display: flex; flex-wrap: wrap; gap: .45rem; }
 .vit-swatch {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline: 2.5px solid transparent; outline-offset: 2px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,.18);
-    transition: transform .12s, outline-color .15s, box-shadow .15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    transition: transform .12s, outline-color .15s;
+    font-size: .8rem;
 }
-.vit-swatch:hover { transform: scale(1.12); }
-.vit-swatch.ativo {
-    outline-color: var(--brand-500);
-    transform: scale(1.12);
-    box-shadow: 0 4px 12px rgba(0,0,0,.25);
-}
+.vit-swatch:hover { transform: scale(1.15); }
+.vit-swatch.ativo { outline-color: var(--brand-500); transform: scale(1.12); }
 
-/* Specs */
-.vit-specs { display: flex; flex-direction: column; gap: .1rem; }
-.vit-spec-row {
+/* Specs técnicos */
+.vit-specs { display: flex; flex-direction: column; }
+.vit-spec {
     display: flex; justify-content: space-between;
     font-size: .82rem; padding: .3rem 0;
     border-bottom: 1px solid var(--surface-100);
     color: var(--surface-500); gap: .5rem;
 }
-.vit-spec-row strong { color: var(--surface-800); text-align: right; }
-.vit-spec-row.obs { flex-direction: column; }
-.vit-spec-row.obs strong { text-align: left; font-size: .78rem; line-height: 1.5; }
+.vit-spec strong { color: var(--surface-800); text-align: right; }
+.vit-spec.obs { flex-direction: column; }
+.vit-spec.obs span:last-child { text-align: left; font-size: .78rem; line-height: 1.5; color: var(--surface-700); }
 
-/* Botões de ação */
 .vit-acoes { display: flex; flex-direction: column; gap: .6rem; }
-.vit-btn-360 {
-    display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .75rem 1rem; border-radius: var(--radius-md);
-    background: var(--surface-900); color: #fff;
-    font-size: .9rem; font-weight: 700; cursor: pointer;
-    border: none; transition: background .15s;
-}
-.vit-btn-360:hover { background: var(--surface-800); }
-.vit-btn-360.ativo {
-    background: var(--brand-600);
-}
-.vit-btn-baixar {
-    display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .7rem 1rem; border-radius: var(--radius-md);
-    background: #fff; color: var(--surface-800);
-    border: 1.5px solid var(--surface-300);
-    font-size: .88rem; font-weight: 600;
-    text-decoration: none; transition: border-color .15s, background .15s;
-}
-.vit-btn-baixar:hover { border-color: var(--brand-500); background: var(--surface-50); }
 .vit-btn-pdf {
     display: flex; align-items: center; justify-content: center; gap: .4rem;
     padding: .7rem 1rem; border-radius: var(--radius-md);
@@ -3013,12 +2989,9 @@ code { color: #c02d76; }
 /* Responsivo */
 @media (max-width: 900px) {
     .vit-detail-layout { grid-template-columns: 1fr; }
-    .vit-galeria { position: static; }
+    .vit-galeria-col { position: static; }
 }
-@media (max-width: 600px) {
-    .vit-galeria { flex-direction: column; }
-    .vit-thumbs { flex-direction: row; width: 100%; overflow-x: auto; }
-    .vit-thumb { width: 70px; flex-shrink: 0; }
-    .vit-main-img { min-height: 360px; }
-    .vit-main-img img { min-height: 360px; }
+@media (max-width: 480px) {
+    .vit-char-container { max-width: 100%; }
+    .vit-btn-360 { max-width: 100%; }
 }
