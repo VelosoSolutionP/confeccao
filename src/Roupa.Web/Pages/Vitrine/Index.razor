@@ -15,24 +15,38 @@
                 <i class="bi bi-bag-heart-fill"></i> Fichas
             </div>
             <div class="vit2-filtros">
-                <input class="input-field vit2-busca"
-                       placeholder="Buscar modelo ou cliente..."
-                       @bind="busca" @bind:event="oninput" />
-                <select class="input-field vit2-sel" @bind="filtroClienteId">
-                    <option value="">Todos os clientes</option>
-                    @foreach (var c in clientes)
-                    {
-                        var nome = string.IsNullOrEmpty(c.NomeFantasia) ? c.RazaoSocial : c.NomeFantasia;
-                        <option value="@c.Id">@nome</option>
-                    }
-                </select>
-                <select class="input-field vit2-sel" @bind="filtroTipo">
-                    <option value="">Todos os tipos</option>
-                    @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
-                    {
-                        <option value="@((int)tp)">@NomeTipo(tp)</option>
-                    }
-                </select>
+                <!-- Busca -->
+                <div class="vit2-search-wrap">
+                    <i class="bi bi-search vit2-search-icon"></i>
+                    <input class="vit2-search-input"
+                           placeholder="Buscar modelo ou cliente..."
+                           @bind="busca" @bind:event="oninput" />
+                </div>
+                <!-- Cliente -->
+                <div class="vit2-custom-select">
+                    <i class="bi bi-buildings vit2-sel-icon"></i>
+                    <select @bind="filtroClienteId">
+                        <option value="">Todos os clientes</option>
+                        @foreach (var c in clientes)
+                        {
+                            var nome = string.IsNullOrEmpty(c.NomeFantasia) ? c.RazaoSocial : c.NomeFantasia;
+                            <option value="@c.Id">@nome</option>
+                        }
+                    </select>
+                    <i class="bi bi-chevron-down vit2-sel-arrow"></i>
+                </div>
+                <!-- Tipo -->
+                <div class="vit2-custom-select">
+                    <i class="bi bi-tag vit2-sel-icon"></i>
+                    <select @bind="filtroTipo">
+                        <option value="">Todos os tipos</option>
+                        @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
+                        {
+                            <option value="@((int)tp)">@NomeTipo(tp)</option>
+                        }
+                    </select>
+                    <i class="bi bi-chevron-down vit2-sel-arrow"></i>
+                </div>
             </div>
         </div>
 
@@ -415,6 +429,9 @@
         produtos   = t1.Result;
         clientes   = t2.Result;
         carregando = false;
+        // Seleciona automaticamente a primeira ficha para o personagem já aparecer
+        if (produtos.Any())
+            SelecionarFicha(produtos.First());
     }
 
     public void Dispose() => PararTimer();

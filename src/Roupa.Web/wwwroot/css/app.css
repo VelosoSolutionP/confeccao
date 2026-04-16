@@ -3272,3 +3272,98 @@ code { color: #c02d76; }
     .vit2-layout { grid-template-columns: 1fr; }
     .vit2-left { position: static; max-height: 280px; }
 }
+
+/* ── Busca com ícone ── */
+.vit2-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.vit2-search-icon {
+    position: absolute;
+    left: .65rem;
+    font-size: .8rem;
+    color: var(--surface-400);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.vit2-search-input {
+    width: 100%;
+    padding: .45rem .7rem .45rem 2rem;
+    border: 1.5px solid var(--surface-200);
+    border-radius: var(--radius-sm);
+    font-size: .8rem;
+    font-family: inherit;
+    color: var(--surface-800);
+    background: var(--surface-0);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.vit2-search-input:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+
+.vit2-search-input::placeholder { color: var(--surface-300); }
+
+/* ── Custom Select ── */
+.vit2-custom-select {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.vit2-sel-icon {
+    position: absolute;
+    left: .65rem;
+    font-size: .78rem;
+    color: var(--surface-400);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.vit2-sel-arrow {
+    position: absolute;
+    right: .65rem;
+    font-size: .68rem;
+    color: var(--surface-400);
+    pointer-events: none;
+    z-index: 1;
+    transition: transform .15s;
+}
+
+.vit2-custom-select select {
+    width: 100%;
+    padding: .45rem .7rem .45rem 2rem;
+    border: 1.5px solid var(--surface-200);
+    border-radius: var(--radius-sm);
+    font-size: .8rem;
+    font-family: inherit;
+    color: var(--surface-800);
+    background: var(--surface-0);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    padding-right: 2rem;
+}
+
+.vit2-custom-select select:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+
+.vit2-custom-select select:focus + .vit2-sel-arrow {
+    color: var(--brand-500);
+    transform: rotate(180deg);
+}
+
+.vit2-custom-select select option {
+    color: var(--surface-800);
+    background: var(--surface-0);
+    font-size: .82rem;
+}
