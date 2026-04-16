@@ -584,6 +584,19 @@ html, body {
     padding: 4rem;
 }
 
+/* ─── VALIDATION ─── */
+.campo-erro {
+    display: block;
+    font-size: .75rem;
+    color: var(--danger);
+    margin-top: .25rem;
+}
+
+.input-field.invalido {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(239,68,68,.1);
+}
+
 /* ─── MODAL DRAWER ─── */
 .drawer-overlay {
     position: fixed;

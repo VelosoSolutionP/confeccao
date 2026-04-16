@@ -5,97 +5,147 @@
 
 <PageTitle>Pedidos</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Pedidos</h2>
-    <button class="btn btn-primary" @onclick="() => mostrarForm = true">+ Novo Pedido</button>
+<div class="page-header">
+    <div>
+        <div class="page-title">Pedidos</div>
+        <div class="page-subtitle">Gerencie todos os pedidos de uniformes</div>
+    </div>
+    <button class="btn-primary-modern" @onclick="AbrirDrawer">
+        <i class="bi bi-plus-lg"></i> Novo Pedido
+    </button>
 </div>
 
-@if (mostrarForm)
+@if (mostrarDrawer)
 {
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white fw-semibold">Novo Pedido</div>
-        <div class="card-body">
+    <div class="drawer-overlay" @onclick="FecharDrawer"></div>
+    <div class="drawer">
+        <div class="drawer-header">
+            <span class="drawer-title">Novo Pedido</span>
+            <button class="drawer-close" @onclick="FecharDrawer"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="drawer-body form-modern">
             @if (!string.IsNullOrEmpty(erroForm))
             {
-                <div class="alert alert-danger">@erroForm</div>
+                <div class="form-error-banner">
+                    <i class="bi bi-exclamation-circle-fill"></i> @erroForm
+                </div>
             }
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Cliente *</label>
-                    <select class="form-select" @bind="novoPedido.ClienteId">
-                        <option value="">Selecione...</option>
-                        @foreach (var c in clientes)
-                        {
-                            <option value="@c.Id">@c.NomeFantasia</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Data de Entrega</label>
-                    <input class="form-control" type="date" @bind="novoPedido.DataEntrega" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Observações</label>
-                    <input class="form-control" @bind="novoPedido.Observacoes" />
-                </div>
+
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select class="input-field" @bind="novoPedido.ClienteId"
+                        style="appearance:auto">
+                    <option value="">Selecione o cliente...</option>
+                    @foreach (var c in clientes)
+                    {
+                        <option value="@c.Id">@c.NomeFantasia</option>
+                    }
+                </select>
+                @if (camposInvalidos.Contains("cliente"))
+                {
+                    <span class="campo-erro">Selecione um cliente</span>
+                }
             </div>
-            <div class="mt-3 d-flex gap-2">
-                <button class="btn btn-success" @onclick="CriarPedido" disabled="@salvando">
-                    @if (salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                    Criar Pedido
-                </button>
-                <button class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
+
+            <div class="form-group">
+                <label>Data de Entrega</label>
+                <input class="input-field" type="date" @bind="novoPedido.DataEntrega" />
+            </div>
+
+            <div class="form-group">
+                <label>Observações</label>
+                <textarea class="input-field" rows="3" @bind="novoPedido.Observacoes"
+                          placeholder="Informações adicionais sobre o pedido..."
+                          style="resize:vertical"></textarea>
             </div>
         </div>
+        <div class="drawer-footer">
+            <button class="btn-ghost" @onclick="FecharDrawer">Cancelar</button>
+            <button class="btn-primary-modern" @onclick="CriarPedido" disabled="@salvando">
+                @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
+                else { <i class="bi bi-check-lg"></i> }
+                Criar Pedido
+            </button>
+        </div>
+    </div>
+}
+
+<!-- FILTROS -->
+@if (!carregando && pedidos.Any())
+{
+    <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap">
+        @foreach (var f in filtros)
+        {
+            <button class="@(filtroAtivo == f.Key ? "btn-primary-modern" : "btn-ghost")"
+                    style="font-size:.8rem;padding:.35rem .85rem"
+                    @onclick="() => filtroAtivo = f.Key">
+                @f.Value
+            </button>
+        }
     </div>
 }
 
 @if (carregando)
 {
-    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    <div class="loading-center"><div class="spinner-border text-primary"></div></div>
 }
-else if (!pedidos.Any())
+else if (!PedidosFiltrados.Any())
 {
-    <div class="text-center py-5 text-muted">Nenhum pedido cadastrado.</div>
+    <div class="card-modern">
+        <div class="empty-state">
+            <i class="bi bi-bag"></i>
+            <p>@(pedidos.Any() ? "Nenhum pedido nesse status." : "Nenhum pedido cadastrado ainda.")</p>
+            @if (!pedidos.Any())
+            {
+                <button class="btn-primary-modern mt-3" @onclick="AbrirDrawer">
+                    <i class="bi bi-plus-lg"></i> Criar primeiro pedido
+                </button>
+            }
+        </div>
+    </div>
 }
 else
 {
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <span class="card-title">
+                <i class="bi bi-bag-check text-primary"></i>
+                @PedidosFiltrados.Count pedido@(PedidosFiltrados.Count != 1 ? "s" : "")
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Entrega</th>
+                        <th>Total</th>
+                        <th>Criado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in PedidosFiltrados)
+                    {
                         <tr>
-                            <th>Número</th>
-                            <th>Cliente</th>
-                            <th>Status</th>
-                            <th>Entrega</th>
-                            <th>Total</th>
-                            <th>Criado</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var p in pedidos)
-                        {
-                            <tr>
-                                <td class="fw-semibold">@p.Numero</td>
-                                <td>@p.NomeCliente</td>
-                                <td><span class="badge @BadgeStatus(p.Status)">@p.StatusNome</span></td>
-                                <td>@(p.DataEntrega?.ToString("dd/MM/yyyy") ?? "—")</td>
-                                <td>@p.Total.ToString("C2")</td>
-                                <td>@p.CriadoEm.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary"
+                            <td class="fw-medium" style="font-family:monospace">@p.Numero</td>
+                            <td>@p.NomeCliente</td>
+                            <td><span class="badge-modern @BadgeCls(p.Status)">@p.StatusNome</span></td>
+                            <td>@(p.DataEntrega?.ToString("dd/MM/yy") ?? "—")</td>
+                            <td style="font-weight:600">@p.Total.ToString("C2")</td>
+                            <td style="color:var(--surface-400);font-size:.8rem">@p.CriadoEm.ToString("dd/MM/yy")</td>
+                            <td>
+                                <button class="btn-table primary"
                                         @onclick="@(() => Nav.NavigateTo($"/pedidos/{p.Id}"))">
-                                        Ver
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                                    <i class="bi bi-eye"></i> Abrir
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 }
@@ -103,16 +153,35 @@ else
 @code {
     [SupplyParameterFromQuery] public string? ClienteId { get; set; }
 
-    private List<Models.PedidoDto> pedidos = [];
-    private List<Models.ClienteDto> clientes = [];
+    private List<Models.PedidoDto>  pedidos   = [];
+    private List<Models.ClienteDto> clientes  = [];
     private Models.CriarPedidoModel novoPedido = new();
-    private bool carregando = true, mostrarForm, salvando;
-    private string erroForm = "";
+    private HashSet<string> camposInvalidos = [];
+    private bool carregando = true, mostrarDrawer, salvando;
+    private string erroForm = "", filtroAtivo = "todos";
+
+    private static Dictionary<string, string> filtros = new()
+    {
+        ["todos"]    = "Todos",
+        ["abertos"]  = "Abertos",
+        ["producao"] = "Em Produção",
+        ["concluido"]= "Concluídos",
+        ["cancelado"]= "Cancelados",
+    };
+
+    private List<Models.PedidoDto> PedidosFiltrados => filtroAtivo switch
+    {
+        "abertos"  => pedidos.Where(p => p.Status is Models.StatusPedido.Rascunho or Models.StatusPedido.Confirmado).ToList(),
+        "producao" => pedidos.Where(p => p.Status == Models.StatusPedido.EmProducao).ToList(),
+        "concluido"=> pedidos.Where(p => p.Status == Models.StatusPedido.Concluido).ToList(),
+        "cancelado"=> pedidos.Where(p => p.Status == Models.StatusPedido.Cancelado).ToList(),
+        _          => pedidos
+    };
 
     protected override async Task OnInitializedAsync()
     {
         clientes = await Api.ListarClientesAsync();
-        pedidos = await Api.ListarPedidosAsync();
+        pedidos  = await Api.ListarPedidosAsync();
         if (Guid.TryParse(ClienteId, out var cId))
         {
             pedidos = pedidos.Where(p => p.ClienteId == cId).ToList();
@@ -121,29 +190,35 @@ else
         carregando = false;
     }
 
-    private void Cancelar() { mostrarForm = false; erroForm = ""; }
+    private void AbrirDrawer() { mostrarDrawer = true; erroForm = ""; camposInvalidos.Clear(); novoPedido = new(); }
+    private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; camposInvalidos.Clear(); }
 
     private async Task CriarPedido()
     {
+        camposInvalidos.Clear();
+        if (novoPedido.ClienteId == Guid.Empty || novoPedido.ClienteId == default)
+            camposInvalidos.Add("cliente");
+        if (camposInvalidos.Any()) return;
+
         salvando = true;
         erroForm = "";
         var (sucesso, dados, erro) = await Api.CriarPedidoAsync(novoPedido);
         if (sucesso && dados is not null)
         {
-            mostrarForm = false;
+            FecharDrawer();
             Nav.NavigateTo($"/pedidos/{dados.Id}");
         }
         else erroForm = erro ?? "Erro ao criar pedido.";
         salvando = false;
     }
 
-    private static string BadgeStatus(Models.StatusPedido s) => s switch
+    private static string BadgeCls(Models.StatusPedido s) => s switch
     {
-        Models.StatusPedido.Rascunho   => "bg-secondary",
-        Models.StatusPedido.Confirmado => "bg-primary",
-        Models.StatusPedido.EmProducao => "bg-warning text-dark",
-        Models.StatusPedido.Concluido  => "bg-success",
-        Models.StatusPedido.Cancelado  => "bg-danger",
-        _ => "bg-secondary"
+        Models.StatusPedido.Rascunho   => "draft",
+        Models.StatusPedido.Confirmado => "info",
+        Models.StatusPedido.EmProducao => "warning",
+        Models.StatusPedido.Concluido  => "success",
+        Models.StatusPedido.Cancelado  => "danger",
+        _ => "draft"
     };
 }
