@@ -2,131 +2,329 @@
 @attribute [Authorize]
 @inject ApiService Api
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<PageTitle>Layouts</PageTitle>
+<PageTitle>Fichas de Layout</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Fichas de Layout</h2>
-    <button class="btn btn-primary" @onclick="() => mostrarForm = true">+ Novo Layout</button>
+<!-- ═══════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════ -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Fichas de Layout</div>
+        <div class="page-subtitle">Cada ficha aprovada é a ordem de produção da fábrica</div>
+    </div>
+    <button class="btn-primary-modern" @onclick="AbrirDrawer">
+        <i class="bi bi-plus-lg"></i> Nova Ficha
+    </button>
 </div>
 
-@if (mostrarForm)
+<!-- ═══════════════════════════════════════════
+     DRAWER — NOVA FICHA
+═══════════════════════════════════════════ -->
+@if (mostrarDrawer)
 {
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white fw-semibold">Nova Ficha de Layout</div>
-        <div class="card-body">
+    <div class="drawer-overlay" @onclick="FecharDrawer"></div>
+    <div class="drawer" style="width:560px">
+        <div class="drawer-header">
+            <span class="drawer-title"><i class="bi bi-palette2 me-2 text-primary"></i>Nova Ficha de Layout</span>
+            <button class="drawer-close" @onclick="FecharDrawer"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="drawer-body form-modern">
             @if (!string.IsNullOrEmpty(erroForm))
             {
-                <div class="alert alert-danger">@erroForm</div>
+                <div class="form-error-banner"><i class="bi bi-exclamation-circle-fill"></i> @erroForm</div>
             }
+
+            <div class="section-divider">Identificação</div>
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Cliente *</label>
-                    <select class="form-select" @bind="novoLayout.ClienteId">
-                        <option value="">Selecione...</option>
-                        @foreach (var c in clientes)
-                        {
-                            <option value="@c.Id">@c.NomeFantasia</option>
-                        }
-                    </select>
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Cliente *</label>
+                        <select class="input-field @(invalidos.Contains("cliente") ? "invalido" : "")"
+                                @bind="novoLayout.ClienteId" style="appearance:auto">
+                            <option value="">Selecione o cliente...</option>
+                            @foreach (var c in clientes)
+                            {
+                                <option value="@c.Id">@c.NomeFantasia</option>
+                            }
+                        </select>
+                        @if (invalidos.Contains("cliente")) { <span class="campo-erro">Selecione um cliente</span> }
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Modelo *</label>
-                    <input class="form-control" @bind="novoLayout.Modelo" placeholder="Ex: Camisa polo MC" />
+                <div class="col-7">
+                    <div class="form-group">
+                        <label>Nome do Modelo *</label>
+                        <input class="input-field @(invalidos.Contains("modelo") ? "invalido" : "")"
+                               @bind="novoLayout.Modelo" placeholder="Ex: Polo MC Sem Bolso" />
+                        @if (invalidos.Contains("modelo")) { <span class="campo-erro">Informe o modelo</span> }
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="form-group">
+                        <label>Tipo de Produto *</label>
+                        <select class="input-field" @bind="novoLayout.TipoProduto" style="appearance:auto">
+                            @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
+                            {
+                                <option value="@tp">@NomeTipo(tp)</option>
+                            }
+                        </select>
+                    </div>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Descrição *</label>
-                    <textarea class="form-control" rows="2" @bind="novoLayout.Descricao"
-                        placeholder="Ex: Camisa polo MC, sem bolso, pé de gola na cor BRANCO."></textarea>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Tipo de Produto *</label>
-                    <select class="form-select" @bind="novoLayout.TipoProduto">
-                        @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
-                        {
-                            <option value="@tp">@tp</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Tecido *</label>
-                    <input class="form-control" @bind="novoLayout.Tecido"
-                        placeholder="Ex: Malha piquet PV na cor 700 Vermelho" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Cores *</label>
-                    <input class="form-control" @bind="novoLayout.Cores" placeholder="Ex: Vermelho e Branco" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Tipo Logomarca *</label>
-                    <select class="form-select" @bind="novoLayout.TipoLogomarca">
-                        @foreach (var tl in Enum.GetValues<Models.TipoLogomarca>())
-                        {
-                            <option value="@tl">@tl</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Posição *</label>
-                    <input class="form-control" @bind="novoLayout.PosicaoLogomarca"
-                        placeholder="Ex: Frente esquerda" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Tamanho *</label>
-                    <input class="form-control" @bind="novoLayout.TamanhoLogomarca" placeholder="Ex: 7cm" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Cor Logomarca *</label>
-                    <input class="form-control" @bind="novoLayout.CorLogomarca" placeholder="Ex: Branco" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Outros</label>
-                    <input class="form-control" @bind="novoLayout.Outros"
-                        placeholder="Ex: Etiqueta da bandeira da Itália na manga direita." />
+                    <div class="form-group">
+                        <label>Descrição completa *</label>
+                        <textarea class="input-field @(invalidos.Contains("desc") ? "invalido" : "")"
+                                  rows="2" @bind="novoLayout.Descricao"
+                                  placeholder="Ex: Camisa polo MC, sem bolso, pé de gola na cor BRANCO, colarinho 2 botões."></textarea>
+                        @if (invalidos.Contains("desc")) { <span class="campo-erro">Descreva o produto</span> }
+                    </div>
                 </div>
             </div>
-            <div class="mt-3 d-flex gap-2">
-                <button class="btn btn-success" @onclick="SalvarLayout" disabled="@salvando">
-                    @if (salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                    Salvar
-                </button>
-                <button class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
+
+            <div class="section-divider">Tecido & Cores</div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Tecido *</label>
+                        <input class="input-field @(invalidos.Contains("tecido") ? "invalido" : "")"
+                               @bind="novoLayout.Tecido" placeholder="Ex: Malha piquet PV 700" />
+                        @if (invalidos.Contains("tecido")) { <span class="campo-erro">Informe o tecido</span> }
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Cores *</label>
+                        <input class="input-field @(invalidos.Contains("cores") ? "invalido" : "")"
+                               @bind="novoLayout.Cores" placeholder="Ex: Vermelho e Branco" />
+                        @if (invalidos.Contains("cores")) { <span class="campo-erro">Informe as cores</span> }
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">Logomarca / Aplicação</div>
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label>Tipo de Aplicação *</label>
+                        <select class="input-field" @bind="novoLayout.TipoLogomarca" style="appearance:auto">
+                            @foreach (var tl in Enum.GetValues<Models.TipoLogomarca>())
+                            {
+                                <option value="@tl">@NomeLogomarca(tl)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-group">
+                        <label>Posição *</label>
+                        <input class="input-field @(invalidos.Contains("posicao") ? "invalido" : "")"
+                               @bind="novoLayout.PosicaoLogomarca" placeholder="Frente esquerda" />
+                        @if (invalidos.Contains("posicao")) { <span class="campo-erro">Informe a posição</span> }
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>Tamanho</label>
+                        <input class="input-field" @bind="novoLayout.TamanhoLogomarca" placeholder="7cm" />
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>Cor logo</label>
+                        <input class="input-field" @bind="novoLayout.CorLogomarca" placeholder="Branco" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">Medidas de Referência</div>
+            <div class="row g-2">
+                @foreach (var tam in tamanhos)
+                {
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label style="font-size:.75rem">@tam</label>
+                            <input class="input-field" style="font-size:.85rem"
+                                   value="@(medidas.GetValueOrDefault(tam, ""))"
+                                   @oninput="@(e => medidas[tam] = e.Value?.ToString() ?? "")"
+                                   placeholder="P x L cm" />
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="section-divider">Observações</div>
+            <div class="form-group">
+                <textarea class="input-field" rows="2" @bind="novoLayout.Outros"
+                          placeholder="Ex: Etiqueta bandeira Itália manga direita. Gola em contraste."></textarea>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-ghost" @onclick="FecharDrawer">Cancelar</button>
+            <button class="btn-primary-modern" @onclick="SalvarLayout" disabled="@salvando">
+                @if (salvando)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                    <span>Gerando avatar...</span>
+                }
+                else
+                {
+                    <i class="bi bi-magic"></i>
+                    <span>Salvar & Gerar Avatar</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+<!-- ═══════════════════════════════════════════
+     VIEWER 360°
+═══════════════════════════════════════════ -->
+@if (fichaViewer is not null)
+{
+    <div class="drawer-overlay" @onclick="FecharViewer"></div>
+    <div class="viewer-modal">
+        <div class="viewer-header">
+            <div>
+                <div style="font-weight:700;font-size:1.1rem">@fichaViewer.Modelo</div>
+                <div style="font-size:.8rem;color:var(--surface-400)">@fichaViewer.NomeCliente</div>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center">
+                @if (fichaViewer.Aprovado)
+                {
+                    <span class="badge-modern success"><i class="bi bi-check-circle-fill"></i> APROVADO</span>
+                }
+                else
+                {
+                    <button class="btn-primary-modern" style="font-size:.8rem" @onclick="AprovarFicha">
+                        <i class="bi bi-check-lg"></i> Aprovar Ficha
+                    </button>
+                }
+                <button class="drawer-close" @onclick="FecharViewer"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+
+        @if (fichaViewer.Aprovado)
+        {
+            <div class="aviso-aprovado">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                FICHA APROVADA — NÃO ALTERAR MEDIDAS, TECIDO OU MATERIAL.
+                Qualquer mudança impacta diretamente no resultado final e gera retrabalho.
+                Para alterações, crie uma nova ficha revisada.
+            </div>
+        }
+
+        <div class="viewer-body">
+            <!-- AVATAR 360 -->
+            <div class="avatar-stage">
+                <div class="avatar-hint">
+                    <i class="bi bi-arrow-left-right"></i> Arraste para girar
+                </div>
+                <div class="avatar-360" id="av360_@fichaViewer.Id">
+                    @foreach (var (url, i) in UrlsAvatar(fichaViewer).Select((u,i)=>(u,i)))
+                    {
+                        <img class="av-frame" src="@url" alt="Vista @(i*90)°"
+                             style="opacity:@(i==0?"1":"0");transition:opacity .12s,transform .12s" />
+                    }
+                    <div class="avatar-compass">
+                        @foreach (var (label, deg) in new[]{("F",0),("D",90),("C",180),("E",270)})
+                        {
+                            <span class="compass-pt" style="transform:rotate(@(deg)deg) translateY(-54px) rotate(-@(deg)deg)">@label</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUMÁRIO DA FICHA -->
+            <div class="ficha-summary">
+                <div class="summary-title">
+                    <i class="bi bi-file-earmark-text"></i> Ficha Técnica
+                    <span class="summary-version">v@fichaViewer.Versao</span>
+                </div>
+
+                <div class="summary-section">
+                    <div class="summary-row"><span>Produto</span><strong>@NomeTipo(fichaViewer.TipoProduto)</strong></div>
+                    <div class="summary-row"><span>Tecido</span><strong>@fichaViewer.Tecido</strong></div>
+                    <div class="summary-row"><span>Cores</span><strong>@fichaViewer.Cores</strong></div>
+                    <div class="summary-row"><span>Aplicação</span><strong>@NomeLogomarca(fichaViewer.TipoLogomarca)</strong></div>
+                    <div class="summary-row"><span>Posição</span><strong>@fichaViewer.PosicaoLogomarca</strong></div>
+                    @if (!string.IsNullOrEmpty(fichaViewer.TamanhoLogomarca))
+                    {
+                        <div class="summary-row"><span>Tam. logo</span><strong>@fichaViewer.TamanhoLogomarca</strong></div>
+                    }
+                </div>
+
+                @if (fichaViewer.Medidas?.Any() == true)
+                {
+                    <div class="summary-section">
+                        <div class="summary-label">Medidas de Grade</div>
+                        @foreach (var m in fichaViewer.Medidas)
+                        {
+                            <div class="summary-row"><span>@m.Key</span><strong>@m.Value</strong></div>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(fichaViewer.Outros))
+                {
+                    <div class="summary-section">
+                        <div class="summary-label">Observações</div>
+                        <p style="font-size:.82rem;color:var(--surface-700);line-height:1.5">@fichaViewer.Outros</p>
+                    </div>
+                }
+
+                <div class="summary-section" style="font-size:.75rem;color:var(--surface-400)">
+                    Criado em @fichaViewer.CriadoEm.ToString("dd/MM/yyyy HH:mm")
+                </div>
             </div>
         </div>
     </div>
 }
 
+<!-- ═══════════════════════════════════════════
+     GALERIA
+═══════════════════════════════════════════ -->
 @if (carregando)
 {
-    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    <div class="loading-center"><div class="spinner-border text-primary"></div></div>
 }
 else if (!layouts.Any())
 {
-    <div class="text-center py-5 text-muted">Nenhum layout cadastrado.</div>
+    <div class="card-modern">
+        <div class="empty-state">
+            <i class="bi bi-palette2"></i>
+            <p>Nenhuma ficha criada ainda.</p>
+            <button class="btn-primary-modern mt-3" @onclick="AbrirDrawer">
+                <i class="bi bi-magic"></i> Criar primeira ficha
+            </button>
+        </div>
+    </div>
 }
 else
 {
-    <div class="row g-3">
+    <div class="gallery-grid">
         @foreach (var l in layouts)
         {
-            <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between">
-                        <span class="fw-semibold">@l.Modelo</span>
-                        <span class="badge bg-secondary">@l.TipoProduto</span>
+            <div class="gallery-card @(l.Aprovado ? "aprovado" : "")" @onclick="() => AbrirViewer(l)">
+                <div class="gallery-avatar">
+                    <img src="@UrlAvatarFrent(l)" alt="@l.Modelo"
+                         loading="lazy" onerror="this.src='/img/placeholder.svg'" />
+                    @if (l.Aprovado)
+                    {
+                        <div class="gallery-badge-aprovado">
+                            <i class="bi bi-check-circle-fill"></i> Aprovado
+                        </div>
+                    }
+                    <div class="gallery-overlay">
+                        <i class="bi bi-eye-fill"></i> Ver ficha
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted small mb-2">@l.NomeCliente</p>
-                        <p class="mb-1 small"><strong>Tecido:</strong> @l.Tecido</p>
-                        <p class="mb-1 small"><strong>Cores:</strong> @l.Cores</p>
-                        <p class="mb-1 small"><strong>Logomarca:</strong> @l.TipoLogomarca — @l.PosicaoLogomarca (@l.TamanhoLogomarca) @l.CorLogomarca</p>
-                        @if (!string.IsNullOrEmpty(l.Outros))
-                        {
-                            <p class="mb-0 small text-muted"><strong>Outros:</strong> @l.Outros</p>
-                        }
-                    </div>
-                    <div class="card-footer bg-white border-0">
-                        <small class="text-muted">Criado em @l.CriadoEm.ToString("dd/MM/yyyy")</small>
+                </div>
+                <div class="gallery-info">
+                    <div class="gallery-modelo">@l.Modelo</div>
+                    <div class="gallery-cliente">@l.NomeCliente</div>
+                    <div class="gallery-tags">
+                        <span class="badge-modern draft" style="font-size:.68rem">@NomeTipo(l.TipoProduto)</span>
+                        <span class="badge-modern info" style="font-size:.68rem">@NomeLogomarca(l.TipoLogomarca)</span>
                     </div>
                 </div>
             </div>
@@ -137,38 +335,164 @@ else
 @code {
     [SupplyParameterFromQuery] public string? ClienteId { get; set; }
 
-    private List<Models.LayoutDto> layouts = [];
-    private List<Models.ClienteDto> clientes = [];
+    private List<Models.LayoutDto>  layouts    = [];
+    private List<Models.ClienteDto> clientes   = [];
     private Models.CriarLayoutModel novoLayout = new();
-    private bool carregando = true, mostrarForm, salvando;
+    private Models.LayoutDto?       fichaViewer;
+    private HashSet<string>         invalidos  = [];
+    private Dictionary<string, string> medidas = [];
+    private bool carregando = true, mostrarDrawer, salvando;
     private string erroForm = "";
+
+    private static readonly string[] tamanhos = ["PP","P","M","G","GG","EG","EGG","Personalizado"];
 
     protected override async Task OnInitializedAsync()
     {
         clientes = await Api.ListarClientesAsync();
+        await CarregarLayouts();
+        carregando = false;
+    }
+
+    private async Task CarregarLayouts()
+    {
         if (Guid.TryParse(ClienteId, out var cId))
         {
             layouts = await Api.ListarLayoutsPorClienteAsync(cId);
             novoLayout.ClienteId = cId;
         }
         else layouts = await Api.ListarLayoutsAsync();
-        carregando = false;
     }
 
-    private void Cancelar() { mostrarForm = false; erroForm = ""; }
+    private void AbrirDrawer()
+    {
+        mostrarDrawer = true; erroForm = ""; invalidos.Clear();
+        medidas = tamanhos.ToDictionary(t => t, _ => "");
+        novoLayout = new();
+        if (Guid.TryParse(ClienteId, out var cId)) novoLayout.ClienteId = cId;
+    }
+
+    private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; invalidos.Clear(); }
+
+    private async Task AbrirViewer(Models.LayoutDto l)
+    {
+        var med = ParseMedidasDeOutros(l.Outros);
+        fichaViewer = l with { Medidas = med.Count > 0 ? med : null, Versao = 1 };
+        await Task.Delay(100);
+        await JS.InvokeVoidAsync("Avatar360.init", $"av360_{l.Id}");
+    }
+
+    private static Dictionary<string, string> ParseMedidasDeOutros(string? outros)
+    {
+        var result = new Dictionary<string, string>();
+        if (string.IsNullOrEmpty(outros)) return result;
+        var idx = outros.IndexOf("Grade:");
+        if (idx < 0) return result;
+        var gradeStr = outros[(idx + 6)..].Trim();
+        foreach (var part in gradeStr.Split(','))
+        {
+            var kv = part.Split(':', 2);
+            if (kv.Length == 2 && !string.IsNullOrWhiteSpace(kv[0]))
+                result[kv[0].Trim()] = kv[1].Trim();
+        }
+        return result;
+    }
+
+    private void FecharViewer() => fichaViewer = null;
+
+    private void AprovarFicha()
+    {
+        if (fichaViewer is null) return;
+        fichaViewer = fichaViewer with { Aprovado = true };
+        var idx = layouts.FindIndex(l => l.Id == fichaViewer.Id);
+        if (idx >= 0) layouts[idx] = fichaViewer;
+    }
 
     private async Task SalvarLayout()
     {
+        invalidos.Clear();
+        if (novoLayout.ClienteId == default)   invalidos.Add("cliente");
+        if (string.IsNullOrWhiteSpace(novoLayout.Modelo))     invalidos.Add("modelo");
+        if (string.IsNullOrWhiteSpace(novoLayout.Descricao))  invalidos.Add("desc");
+        if (string.IsNullOrWhiteSpace(novoLayout.Tecido))     invalidos.Add("tecido");
+        if (string.IsNullOrWhiteSpace(novoLayout.Cores))      invalidos.Add("cores");
+        if (string.IsNullOrWhiteSpace(novoLayout.PosicaoLogomarca)) invalidos.Add("posicao");
+        if (invalidos.Any()) return;
+
+        // Serializa medidas no campo Outros como JSON complementar
+        var medidasStr = string.Join(", ", medidas.Where(m => !string.IsNullOrWhiteSpace(m.Value))
+                                                   .Select(m => $"{m.Key}: {m.Value}"));
+        if (!string.IsNullOrWhiteSpace(medidasStr))
+            novoLayout.Outros = (novoLayout.Outros?.Trim() + "\n\nGrade: " + medidasStr).Trim();
+
         salvando = true;
         erroForm = "";
         var (sucesso, _, erro) = await Api.CriarLayoutAsync(novoLayout);
         if (sucesso)
         {
-            mostrarForm = false;
-            novoLayout = new();
-            layouts = await Api.ListarLayoutsAsync();
+            FecharDrawer();
+            await CarregarLayouts();
         }
         else erroForm = erro ?? "Erro ao salvar.";
         salvando = false;
     }
+
+    // ── Geração das URLs de avatar via Pollinations.ai (free, sem API key) ──
+    private string UrlAvatarFrent(Models.LayoutDto l) => BuildAvatarUrl(l, "front view");
+
+    private IEnumerable<string> UrlsAvatar(Models.LayoutDto l) =>
+        new[]
+        {
+            BuildAvatarUrl(l, "front view facing camera"),
+            BuildAvatarUrl(l, "right side view 90 degrees"),
+            BuildAvatarUrl(l, "back view"),
+            BuildAvatarUrl(l, "left side view 90 degrees"),
+        };
+
+    private static string BuildAvatarUrl(Models.LayoutDto l, string view)
+    {
+        var tipo  = NomeTipoEn(l.TipoProduto);
+        var cores = l.Cores.ToLowerInvariant();
+        var logo  = $"{NomeLogomarcaEn(l.TipoLogomarca)} logo on {l.PosicaoLogomarca}";
+        var prompt = $"professional fashion mannequin wearing {tipo}, {cores} color, " +
+                     $"{l.Tecido} fabric, {logo}, {view}, " +
+                     $"clean white studio background, full body, product photography, high quality, 8k";
+        var seed = (l.Id.GetHashCode() + view.GetHashCode()) & 0x7FFFFFFF;
+        return $"https://image.pollinations.ai/prompt/{Uri.EscapeDataString(prompt)}" +
+               $"?width=420&height=600&model=flux&seed={seed}&nologo=true";
+    }
+
+    // ── Helpers de exibição ──
+    private static string NomeTipo(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.CamisaPolo   => "Camisa Polo",
+        Models.TipoProduto.CamisaMalha  => "Camiseta Malha",
+        Models.TipoProduto.Jaleco       => "Jaleco",
+        _ => t.ToString()
+    };
+
+    private static string NomeTipoEn(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.CamisaPolo  => "polo shirt",
+        Models.TipoProduto.CamisaMalha => "t-shirt",
+        Models.TipoProduto.Jaleco      => "work jacket",
+        _ => t.ToString().ToLower()
+    };
+
+    private static string NomeLogomarca(Models.TipoLogomarca t) => t switch
+    {
+        Models.TipoLogomarca.Bordado    => "Bordado",
+        Models.TipoLogomarca.SilkScreen => "Silk Screen",
+        Models.TipoLogomarca.Sublimacao => "Sublimação",
+        Models.TipoLogomarca.Transfer   => "Transfer",
+        _ => t.ToString()
+    };
+
+    private static string NomeLogomarcaEn(Models.TipoLogomarca t) => t switch
+    {
+        Models.TipoLogomarca.Bordado    => "embroidered",
+        Models.TipoLogomarca.SilkScreen => "silk screen printed",
+        Models.TipoLogomarca.Sublimacao => "sublimation printed",
+        Models.TipoLogomarca.Transfer   => "heat transfer",
+        _ => t.ToString().ToLower()
+    };
 }
