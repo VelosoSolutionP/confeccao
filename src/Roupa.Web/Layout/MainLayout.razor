@@ -3,25 +3,37 @@
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager Nav
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4 d-flex justify-content-end align-items-center">
-            <AuthorizeView>
-                <Authorized>
-                    <span class="me-3 text-muted small">Olá, @context.User.Identity?.Name</span>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="Logout">Sair</button>
-                </Authorized>
-            </AuthorizeView>
-        </div>
-
-        <article class="content px-4">
+<div class="app-shell">
+    <NavMenu />
+    <div class="app-main">
+        <header class="app-header">
+            <div class="header-search">
+                <i class="bi bi-search"></i>
+                <span class="text-muted small">Sistema de Gestão</span>
+            </div>
+            <div class="header-actions">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="user-menu">
+                            <div class="user-avatar">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">@context.User.Identity?.Name</div>
+                                <div class="user-role">Administrador</div>
+                            </div>
+                            <button class="btn-logout" @onclick="Logout" title="Sair">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </button>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </header>
+        <main class="app-content">
             @Body
-        </article>
-    </main>
+        </main>
+    </div>
 </div>
 
 @code {

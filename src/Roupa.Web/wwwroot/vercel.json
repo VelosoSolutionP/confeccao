@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!_framework|_content|css|favicon\\.png|icon-192\\.png|Roupa\\.Web\\.styles\\.css|appsettings\\.json|sample-data).*)", "destination": "/index.html" }
+  ]
+}

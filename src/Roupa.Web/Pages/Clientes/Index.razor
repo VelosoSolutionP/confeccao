@@ -5,95 +5,148 @@
 
 <PageTitle>Clientes</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Clientes</h2>
-    <button class="btn btn-primary" @onclick="() => mostrarForm = true">+ Novo Cliente</button>
+<div class="page-header">
+    <div>
+        <div class="page-title">Clientes</div>
+        <div class="page-subtitle">Gerencie os clientes e suas fichas de uniformes</div>
+    </div>
+    <button class="btn-primary-modern" @onclick="AbrirDrawer">
+        <i class="bi bi-plus-lg"></i> Novo Cliente
+    </button>
 </div>
 
-@if (mostrarForm)
+@if (mostrarDrawer)
 {
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white fw-semibold">Novo Cliente</div>
-        <div class="card-body">
+    <div class="drawer-overlay" @onclick="FecharDrawer"></div>
+    <div class="drawer">
+        <div class="drawer-header">
+            <span class="drawer-title">Novo Cliente</span>
+            <button class="drawer-close" @onclick="FecharDrawer"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="drawer-body form-modern">
             @if (!string.IsNullOrEmpty(erroForm))
             {
-                <div class="alert alert-danger">@erroForm</div>
+                <div class="form-error-banner">
+                    <i class="bi bi-exclamation-circle-fill"></i> @erroForm
+                </div>
             }
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Razão Social *</label>
-                    <input class="form-control" @bind="novoCliente.RazaoSocial" />
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Razão Social *</label>
+                        <input class="input-field" @bind="novoCliente.RazaoSocial" placeholder="Nome jurídico da empresa" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Nome Fantasia *</label>
-                    <input class="form-control" @bind="novoCliente.NomeFantasia" />
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Nome Fantasia *</label>
+                        <input class="input-field" @bind="novoCliente.NomeFantasia" placeholder="Nome comercial" />
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">CNPJ *</label>
-                    <input class="form-control" @bind="novoCliente.Cnpj" placeholder="00.000.000/0001-00" />
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>CNPJ *</label>
+                        <input class="input-field" value="@novoCliente.Cnpj"
+                               @oninput="MascararCnpj" placeholder="00.000.000/0001-00"
+                               maxlength="18" inputmode="numeric" />
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Email</label>
-                    <input class="form-control" type="email" @bind="novoCliente.Email" />
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input class="input-field" value="@novoCliente.Telefone"
+                               @oninput="MascararTelefone" placeholder="(00) 00000-0000"
+                               maxlength="15" inputmode="numeric" />
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Telefone</label>
-                    <input class="form-control" @bind="novoCliente.Telefone" />
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input class="input-field" type="email" @bind="novoCliente.Email" placeholder="contato@empresa.com" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Endereço</label>
+                        <input class="input-field" @bind="novoCliente.Endereco" placeholder="Rua, número, bairro" />
+                    </div>
                 </div>
             </div>
-            <div class="mt-3 d-flex gap-2">
-                <button class="btn btn-success" @onclick="SalvarCliente" disabled="@salvando">
-                    @if (salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                    Salvar
-                </button>
-                <button class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
-            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-ghost" @onclick="FecharDrawer">Cancelar</button>
+            <button class="btn-primary-modern" @onclick="SalvarCliente" disabled="@salvando">
+                @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
+                else { <i class="bi bi-check-lg"></i> }
+                Salvar
+            </button>
         </div>
     </div>
 }
 
 @if (carregando)
 {
-    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    <div class="loading-center">
+        <div class="spinner-border text-primary"></div>
+    </div>
 }
 else if (!clientes.Any())
 {
-    <div class="text-center py-5 text-muted">Nenhum cliente cadastrado.</div>
+    <div class="card-modern">
+        <div class="empty-state">
+            <i class="bi bi-buildings"></i>
+            <p>Nenhum cliente cadastrado ainda.</p>
+            <button class="btn-primary-modern mt-3" @onclick="AbrirDrawer">
+                <i class="bi bi-plus-lg"></i> Cadastrar primeiro cliente
+            </button>
+        </div>
+    </div>
 }
 else
 {
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <span class="card-title">
+                <i class="bi bi-buildings text-primary"></i>
+                @clientes.Count cliente@(clientes.Count != 1 ? "s" : "") cadastrado@(clientes.Count != 1 ? "s" : "")
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>CNPJ</th>
+                        <th>Contato</th>
+                        <th>Telefone</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in clientes)
+                    {
                         <tr>
-                            <th>Nome Fantasia</th>
-                            <th>Razão Social</th>
-                            <th>CNPJ</th>
-                            <th>Email</th>
-                            <th>Telefone</th>
-                            <th></th>
+                            <td>
+                                <div class="fw-medium">@c.NomeFantasia</div>
+                                <div style="font-size:.78rem;color:var(--surface-400)">@c.RazaoSocial</div>
+                            </td>
+                            <td style="font-family:monospace;letter-spacing:.03em">@c.Cnpj</td>
+                            <td>@(c.Email ?? "—")</td>
+                            <td>@(c.Telefone ?? "—")</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-table primary" @onclick="@(() => Nav.NavigateTo($"/layouts?clienteId={c.Id}"))">
+                                        <i class="bi bi-palette2"></i> Layouts
+                                    </button>
+                                    <button class="btn-table secondary" @onclick="@(() => Nav.NavigateTo($"/pedidos?clienteId={c.Id}"))">
+                                        <i class="bi bi-bag-check"></i> Pedidos
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var c in clientes)
-                        {
-                            <tr>
-                                <td class="fw-semibold">@c.NomeFantasia</td>
-                                <td>@c.RazaoSocial</td>
-                                <td>@c.Cnpj</td>
-                                <td>@c.Email</td>
-                                <td>@c.Telefone</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" @onclick="@(() => Nav.NavigateTo($"/layouts?clienteId={c.Id}"))">Layouts</button>
-                                    <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="@(() => Nav.NavigateTo($"/pedidos?clienteId={c.Id}"))">Pedidos</button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 }
@@ -101,7 +154,7 @@ else
 @code {
     private List<Models.ClienteDto> clientes = [];
     private Models.CriarClienteModel novoCliente = new();
-    private bool carregando = true, mostrarForm, salvando;
+    private bool carregando = true, mostrarDrawer, salvando;
     private string erroForm = "";
 
     protected override async Task OnInitializedAsync()
@@ -113,7 +166,35 @@ else
     private async Task CarregarAsync() =>
         clientes = await Api.ListarClientesAsync();
 
-    private void Cancelar() { mostrarForm = false; erroForm = ""; }
+    private void AbrirDrawer() { mostrarDrawer = true; erroForm = ""; novoCliente = new(); }
+    private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; }
+
+    private void MascararCnpj(ChangeEventArgs e)
+    {
+        var digits = new string((e.Value?.ToString() ?? "").Where(char.IsDigit).Take(14).ToArray());
+        novoCliente.Cnpj = digits.Length switch
+        {
+            0 => "",
+            <= 2  => digits,
+            <= 5  => $"{digits[..2]}.{digits[2..]}",
+            <= 8  => $"{digits[..2]}.{digits[2..5]}.{digits[5..]}",
+            <= 12 => $"{digits[..2]}.{digits[2..5]}.{digits[5..8]}/{digits[8..]}",
+            _     => $"{digits[..2]}.{digits[2..5]}.{digits[5..8]}/{digits[8..12]}-{digits[12..]}"
+        };
+    }
+
+    private void MascararTelefone(ChangeEventArgs e)
+    {
+        var digits = new string((e.Value?.ToString() ?? "").Where(char.IsDigit).Take(11).ToArray());
+        novoCliente.Telefone = digits.Length switch
+        {
+            0     => "",
+            <= 2  => $"({digits}",
+            <= 6  => $"({digits[..2]}) {digits[2..]}",
+            <= 10 => $"({digits[..2]}) {digits[2..6]}-{digits[6..]}",
+            _     => $"({digits[..2]}) {digits[2..7]}-{digits[7..]}"
+        };
+    }
 
     private async Task SalvarCliente()
     {
@@ -122,8 +203,7 @@ else
         var (sucesso, _, erro) = await Api.CriarClienteAsync(novoCliente);
         if (sucesso)
         {
-            mostrarForm = false;
-            novoCliente = new();
+            FecharDrawer();
             await CarregarAsync();
         }
         else erroForm = erro ?? "Erro ao salvar.";
