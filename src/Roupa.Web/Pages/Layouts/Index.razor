@@ -189,7 +189,32 @@
                 <div style="font-weight:700;font-size:1.1rem">@fichaViewer.Modelo</div>
                 <div style="font-size:.8rem;color:var(--surface-400)">@fichaViewer.NomeCliente</div>
             </div>
-            <div style="display:flex;gap:.5rem;align-items:center">
+            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                <!-- Botão OutfitAnyone -->
+                <button class="btn-outfit @(gerandoTryOn ? "loading" : "")"
+                        @onclick="GerarTryOn" disabled="@gerandoTryOn" title="Gerar avatar com OutfitAnyone (virtual try-on)">
+                    @if (gerandoTryOn)
+                    {
+                        <span class="spinner-border spinner-border-sm"></span>
+                        <span>Gerando...</span>
+                    }
+                    else if (tryOnOk)
+                    {
+                        <i class="bi bi-stars"></i>
+                        <span>Try-On Ativo</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-magic"></i>
+                        <span>OutfitAnyone</span>
+                    }
+                </button>
+                @if (erroTryOn is not null)
+                {
+                    <span style="font-size:.72rem;color:var(--danger)">
+                        <i class="bi bi-exclamation-circle"></i> @erroTryOn
+                    </span>
+                }
                 @if (fichaViewer.Aprovado)
                 {
                     <span class="badge-modern success"><i class="bi bi-check-circle-fill"></i> APROVADO</span>
@@ -217,14 +242,38 @@
         <div class="viewer-body">
             <!-- AVATAR 360 -->
             <div class="avatar-stage">
-                <div class="avatar-hint">
-                    <i class="bi bi-arrow-left-right"></i> Arraste para girar
-                </div>
-                <div class="avatar-360" id="av360_@fichaViewer.Id">
+                @if (gerandoTryOn)
+                {
+                    <div class="tryon-loading">
+                        <div class="tryon-spinner"></div>
+                        <div class="tryon-label">
+                            <strong>OutfitAnyone</strong><br />
+                            <span>Gerando virtual try-on...</span><br />
+                            <span style="font-size:.7rem;opacity:.7">pode levar 20-40s na primeira vez</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="avatar-hint">
+                        @if (tryOnOk)
+                        {
+                            <i class="bi bi-stars" style="color:#f59e0b"></i>
+                            <span style="color:#d97706;font-weight:600">OutfitAnyone</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span>Arraste para girar</span>
+                        }
+                    </div>
+                }
+                <div class="avatar-360" id="av360_@fichaViewer.Id" style="@(gerandoTryOn ? "opacity:.3;pointer-events:none" : "")">
                     @foreach (var (url, i) in UrlsAvatar(fichaViewer).Select((u,i)=>(u,i)))
                     {
                         <img class="av-frame" src="@url" alt="Vista @(i*90)°"
-                             style="opacity:@(i==0?"1":"0");transition:opacity .12s,transform .12s" />
+                             style="opacity:@(i==0?"1":"0");transition:opacity .12s,transform .12s"
+                             onerror="this.src='/img/placeholder.svg'" />
                     }
                     <div class="avatar-compass">
                         @foreach (var (label, deg) in new[]{("F",0),("D",90),("C",180),("E",270)})
@@ -344,6 +393,12 @@ else
     private bool carregando = true, mostrarDrawer, salvando;
     private string erroForm = "";
 
+    // OutfitAnyone try-on state
+    private bool   gerandoTryOn;
+    private bool   tryOnOk;
+    private string? erroTryOn;
+    private Dictionary<Guid, string[]> tryOnCache = [];  // cache por ficha
+
     private static readonly string[] tamanhos = ["PP","P","M","G","GG","EG","EGG","Personalizado"];
 
     protected override async Task OnInitializedAsync()
@@ -397,7 +452,12 @@ else
         return result;
     }
 
-    private void FecharViewer() => fichaViewer = null;
+    private void FecharViewer()
+    {
+        fichaViewer = null;
+        gerandoTryOn = false;
+        erroTryOn = null;
+    }
 
     private void AprovarFicha()
     {
@@ -434,6 +494,56 @@ else
         }
         else erroForm = erro ?? "Erro ao salvar.";
         salvando = false;
+    }
+
+    // ── OutfitAnyone virtual try-on ──────────────────────────────
+    private async Task GerarTryOn()
+    {
+        if (fichaViewer is null) return;
+        gerandoTryOn = true;
+        erroTryOn = null;
+        tryOnOk = false;
+        StateHasChanged();
+
+        try
+        {
+            // Usa cache se já gerou para esta ficha
+            if (tryOnCache.TryGetValue(fichaViewer.Id, out var cached))
+            {
+                await JS.InvokeVoidAsync("Avatar360.updateFrames", $"av360_{fichaViewer.Id}", cached);
+                tryOnOk = true;
+            }
+            else
+            {
+                var tipo  = NomeTipoEn(fichaViewer.TipoProduto);
+                var logo  = $"{NomeLogomarcaEn(fichaViewer.TipoLogomarca)} logo on {fichaViewer.PosicaoLogomarca}";
+                var urls  = await JS.InvokeAsync<string[]?>(
+                    "OutfitAnyone.gerar4Vistas", tipo, fichaViewer.Cores, fichaViewer.Tecido, logo);
+
+                if (urls is not null && urls.Length == 4)
+                {
+                    tryOnCache[fichaViewer.Id] = urls;
+                    await JS.InvokeVoidAsync("Avatar360.updateFrames", $"av360_{fichaViewer.Id}", urls);
+                    tryOnOk = true;
+                }
+                else
+                {
+                    erroTryOn = "API indisponível — usando avatar padrão";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            erroTryOn = "Erro: " + ex.Message[..Math.Min(50, ex.Message.Length)];
+        }
+        finally
+        {
+            gerandoTryOn = false;
+            StateHasChanged();
+            if (tryOnOk)
+                await Task.Delay(150).ContinueWith(_ =>
+                    JS.InvokeVoidAsync("Avatar360.init", $"av360_{fichaViewer?.Id}").AsTask());
+        }
     }
 
     // ── Geração das URLs de avatar via Pollinations.ai (free, sem API key) ──
