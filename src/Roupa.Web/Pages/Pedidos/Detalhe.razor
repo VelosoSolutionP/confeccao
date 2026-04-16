@@ -7,106 +7,200 @@
 
 @if (carregando)
 {
-    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    <div class="loading-center"><div class="spinner-border text-primary"></div></div>
 }
 else if (pedido is null)
 {
-    <div class="alert alert-danger">Pedido não encontrado.</div>
+    <div class="card-modern">
+        <div class="empty-state">
+            <i class="bi bi-bag-x"></i>
+            <p>Pedido não encontrado.</p>
+            <button class="btn-ghost mt-3" @onclick='() => Nav.NavigateTo("/pedidos")'>← Voltar</button>
+        </div>
+    </div>
 }
 else
 {
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <button class="btn btn-sm btn-outline-secondary mb-2" @onclick="Voltar">← Voltar</button>
-            <h2>@pedido.Numero</h2>
-            <p class="text-muted mb-0">@pedido.NomeCliente · Criado em @pedido.CriadoEm.ToString("dd/MM/yyyy")</p>
+    <!-- HEADER -->
+    <div class="page-header" style="flex-wrap:wrap;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.75rem">
+            <button class="btn-ghost" style="padding:.4rem .7rem" @onclick='() => Nav.NavigateTo("/pedidos")'>
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <div>
+                <div class="page-title" style="font-family:monospace;font-size:1.3rem">@pedido.Numero</div>
+                <div class="page-subtitle">@pedido.NomeCliente · @pedido.CriadoEm.ToString("dd/MM/yyyy")</div>
+            </div>
         </div>
-        <div class="d-flex gap-2 align-items-center flex-wrap">
-            <span class="badge fs-6 @BadgeStatus(pedido.Status)">@pedido.StatusNome</span>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <span class="badge-modern @BadgeCls(pedido.Status)" style="font-size:.82rem;padding:.35rem .85rem">
+                @pedido.StatusNome
+            </span>
             @if (pedido.Status == Models.StatusPedido.Rascunho)
             {
-                <button class="btn btn-primary" @onclick="Confirmar">Confirmar</button>
-                <button class="btn btn-outline-danger" @onclick="CancelarPedido">Cancelar</button>
+                <button class="btn-primary-modern" @onclick="Confirmar">
+                    <i class="bi bi-check-circle"></i> Confirmar Pedido
+                </button>
+                <button class="btn-danger-ghost" @onclick="CancelarPedido">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
             }
             @if (pedido.Status == Models.StatusPedido.Confirmado)
             {
-                <button class="btn btn-warning" @onclick="IniciarProducao">Iniciar Produção</button>
-                <button class="btn btn-outline-danger" @onclick="CancelarPedido">Cancelar</button>
+                <button class="btn-primary-modern" style="background:linear-gradient(135deg,#f59e0b,#d97706)" @onclick="IniciarProducao">
+                    <i class="bi bi-play-circle"></i> Iniciar Produção
+                </button>
+                <button class="btn-danger-ghost" @onclick="CancelarPedido">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
             }
             @if (pedido.Status == Models.StatusPedido.EmProducao)
             {
-                <button class="btn btn-success" @onclick="Concluir">Concluir</button>
+                <button class="btn-primary-modern" style="background:linear-gradient(135deg,#10b981,#059669)" @onclick="Concluir">
+                    <i class="bi bi-check2-all"></i> Concluir Pedido
+                </button>
             }
         </div>
     </div>
 
     @if (!string.IsNullOrEmpty(erroStatus))
     {
-        <div class="alert alert-danger">@erroStatus</div>
+        <div class="form-error-banner" style="margin-bottom:1rem">
+            <i class="bi bi-exclamation-circle-fill"></i> @erroStatus
+        </div>
     }
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white fw-semibold d-flex justify-content-between">
-                    <span>Itens do Pedido</span>
+    <!-- PIPELINE DE STATUS -->
+    <div class="pipeline-bar">
+        @foreach (var (label, icon, st) in Pipeline)
+        {
+            var idx = PipelineIdx(pedido.Status);
+            var cur = PipelineIdx(st);
+            var state = cur < idx ? "done" : cur == idx ? "active" : "pending";
+            <div class="pipeline-step @state">
+                <div class="pipeline-dot"><i class="bi @icon"></i></div>
+                <div class="pipeline-label">@label</div>
+            </div>
+            @if (st != Models.StatusPedido.Concluido)
+            {
+                <div class="pipeline-line @(cur < idx ? "done" : "")"></div>
+            }
+        }
+    </div>
+
+    <div class="detalhe-grid">
+        <!-- COLUNA PRINCIPAL -->
+        <div style="display:flex;flex-direction:column;gap:1.25rem;min-width:0">
+
+            <!-- ITENS DO PEDIDO -->
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <span class="card-title">
+                        <i class="bi bi-list-ul text-primary"></i> Itens do Pedido
+                        @if (pedido.Itens.Any())
+                        {
+                            <span class="badge-modern draft" style="margin-left:.25rem">@pedido.Itens.Count</span>
+                        }
+                    </span>
                     @if (pedido.Status == Models.StatusPedido.Rascunho)
                     {
-                        <button class="btn btn-sm btn-outline-primary" @onclick="() => mostrarItemForm = !mostrarItemForm">+ Item</button>
+                        <button class="btn-table primary" @onclick="() => mostrarItemForm = !mostrarItemForm">
+                            <i class="bi bi-plus-lg"></i> Adicionar Item
+                        </button>
                     }
                 </div>
+
                 @if (mostrarItemForm)
                 {
-                    <div class="card-body border-bottom">
+                    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--surface-100);background:var(--surface-50)" class="form-modern">
                         @if (!string.IsNullOrEmpty(erroItem))
                         {
-                            <div class="alert alert-danger py-2">@erroItem</div>
+                            <div class="form-error-banner" style="margin-bottom:.75rem">
+                                <i class="bi bi-exclamation-circle-fill"></i> @erroItem
+                            </div>
                         }
-                        <div class="row g-2">
+                        <div class="row g-2 align-items-end">
                             <div class="col-md-4">
-                                <label class="form-label">Layout *</label>
-                                <select class="form-select form-select-sm" @bind="novoItem.LayoutId">
-                                    <option value="">Selecione...</option>
-                                    @foreach (var l in layouts)
-                                    {
-                                        <option value="@l.Id">@l.Modelo</option>
-                                    }
-                                </select>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Modelo / Ficha</label>
+                                    <select class="input-field" @bind="novoItem.LayoutId" style="appearance:auto">
+                                        <option value="">Selecione o modelo...</option>
+                                        @foreach (var l in layouts)
+                                        {
+                                            <option value="@l.Id">@l.Modelo (@NomeTipo(l.TipoProduto))</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Tamanho *</label>
-                                <select class="form-select form-select-sm" @bind="novoItem.Tamanho">
-                                    @foreach (var t in new[] { "PP", "P", "M", "G", "GG", "EG", "EGG" })
-                                    {
-                                        <option>@t</option>
-                                    }
-                                </select>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Tamanho</label>
+                                    <select class="input-field" @bind="novoItem.Tamanho" style="appearance:auto">
+                                        @foreach (var t in new[] { "PP","P","M","G","GG","EG","EGG","Único" })
+                                        {
+                                            <option>@t</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Qtd *</label>
-                                <input class="form-control form-control-sm" type="number" min="1" @bind="novoItem.Quantidade" />
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Qtd</label>
+                                    <input class="input-field" type="number" min="1" @bind="novoItem.Quantidade" />
+                                </div>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Preço Unit. *</label>
-                                <input class="form-control form-control-sm" type="number" step="0.01" @bind="novoItem.PrecoUnitario" />
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Preço Unitário (R$)</label>
+                                    <input class="input-field" type="number" step="0.01" min="0" @bind="novoItem.PrecoUnitario" />
+                                </div>
                             </div>
-                            <div class="col-md-1 d-flex align-items-end">
-                                <button class="btn btn-sm btn-success w-100" @onclick="AdicionarItem" disabled="@salvandoItem">OK</button>
+                            <div class="col-md-1">
+                                <button class="btn-primary-modern" style="width:100%;justify-content:center"
+                                        @onclick="AdicionarItem" disabled="@salvandoItem">
+                                    @if (salvandoItem) { <span class="spinner-border spinner-border-sm"></span> }
+                                    else { <i class="bi bi-check-lg"></i> }
+                                </button>
                             </div>
                         </div>
+                        <!-- Preview do modelo selecionado -->
+                        @if (novoItem.LayoutId != Guid.Empty)
+                        {
+                            var sel = layouts.FirstOrDefault(l => l.Id == novoItem.LayoutId);
+                            if (sel is not null)
+                            {
+                                <div class="item-preview">
+                                    <img src="@AvatarUrl(sel)" alt="@sel.Modelo"
+                                         onerror="this.src='/img/placeholder.svg'" />
+                                    <div>
+                                        <div style="font-weight:700;font-size:.875rem">@sel.Modelo</div>
+                                        <div style="font-size:.78rem;color:var(--surface-400)">
+                                            @sel.Tecido · @sel.Cores
+                                        </div>
+                                        <div style="font-size:.75rem;color:var(--surface-400)">
+                                            @NomeLogomarca(sel.TipoLogomarca) · @sel.PosicaoLogomarca
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                 }
-                <div class="card-body p-0">
-                    @if (!pedido.Itens.Any())
-                    {
-                        <div class="text-center py-4 text-muted">Nenhum item adicionado.</div>
-                    }
-                    else
-                    {
-                        <table class="table mb-0">
-                            <thead class="table-light">
+
+                @if (!pedido.Itens.Any())
+                {
+                    <div class="empty-state" style="padding:2rem">
+                        <i class="bi bi-bag-plus" style="font-size:2rem"></i>
+                        <p>Nenhum item adicionado.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table-modern">
+                            <thead>
                                 <tr>
-                                    <th>Layout</th>
+                                    <th>Modelo</th>
                                     <th>Tamanho</th>
                                     <th>Qtd</th>
                                     <th>Preço Unit.</th>
@@ -117,39 +211,138 @@ else
                                 @foreach (var i in pedido.Itens)
                                 {
                                     <tr>
-                                        <td>@i.ModeloLayout</td>
-                                        <td><span class="badge bg-light text-dark">@i.Tamanho</span></td>
-                                        <td>@i.Quantidade</td>
+                                        <td style="font-weight:600">@i.ModeloLayout</td>
+                                        <td><span class="badge-modern draft">@i.Tamanho</span></td>
+                                        <td>@i.Quantidade un</td>
                                         <td>@i.PrecoUnitario.ToString("C2")</td>
-                                        <td class="fw-semibold">@i.Total.ToString("C2")</td>
+                                        <td style="font-weight:700;color:var(--surface-900)">@i.Total.ToString("C2")</td>
                                     </tr>
                                 }
                             </tbody>
                             <tfoot>
-                                <tr class="table-light">
-                                    <td colspan="4" class="text-end fw-bold">Total Geral:</td>
-                                    <td class="fw-bold fs-5">@pedido.Total.ToString("C2")</td>
+                                <tr style="background:var(--brand-50)">
+                                    <td colspan="4" style="text-align:right;font-weight:700;padding:.875rem 1rem;color:var(--surface-700)">
+                                        Total do Pedido
+                                    </td>
+                                    <td style="font-weight:800;font-size:1.1rem;padding:.875rem 1rem;color:var(--brand-700)">
+                                        @pedido.Total.ToString("C2")
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+                }
+            </div>
+
+            <!-- ORDEM DE PRODUÇÃO (visível quando confirmado ou em produção) -->
+            @if (pedido.Status is Models.StatusPedido.Confirmado or Models.StatusPedido.EmProducao or Models.StatusPedido.Concluido)
+            {
+                <div class="card-modern ordem-producao-card">
+                    <div class="card-header-modern" style="background:var(--surface-900)">
+                        <span class="card-title" style="color:#fff">
+                            <i class="bi bi-clipboard2-check"></i> Ordem de Produção
+                        </span>
+                        <span style="font-size:.75rem;color:rgba(255,255,255,.5)">
+                            @pedido.Numero
+                        </span>
+                    </div>
+                    <div style="padding:1.25rem 1.5rem">
+                        <div class="op-header">
+                            <div><strong>Cliente:</strong> @pedido.NomeCliente</div>
+                            <div><strong>Entrega:</strong> @(pedido.DataEntrega?.ToString("dd/MM/yyyy") ?? "A definir")</div>
+                            <div><strong>Status:</strong>
+                                <span class="badge-modern @BadgeCls(pedido.Status)">@pedido.StatusNome</span>
+                            </div>
+                        </div>
+
+                        @if (pedido.Itens.Any())
+                        {
+                            <div class="op-itens">
+                                @foreach (var grupo in pedido.Itens.GroupBy(i => i.ModeloLayout))
+                                {
+                                    <div class="op-item-grupo">
+                                        <div class="op-modelo">
+                                            <i class="bi bi-palette2"></i> @grupo.Key
+                                        </div>
+                                        <div class="op-grade">
+                                            @foreach (var i in grupo)
+                                            {
+                                                <div class="op-size-box">
+                                                    <span class="op-size-tam">@i.Tamanho</span>
+                                                    <span class="op-size-qty">@i.Quantidade un</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(pedido.Observacoes))
+                        {
+                            <div class="op-obs">
+                                <i class="bi bi-info-circle"></i> <strong>Obs:</strong> @pedido.Observacoes
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- COLUNA LATERAL -->
+        <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <span class="card-title"><i class="bi bi-info-circle text-primary"></i> Informações</span>
+                </div>
+                <div style="padding:.25rem 0">
+                    <div class="info-row"><span>Cliente</span><strong>@pedido.NomeCliente</strong></div>
+                    <div class="info-row"><span>Número</span>
+                        <strong style="font-family:monospace;font-size:.8rem">@pedido.Numero</strong>
+                    </div>
+                    <div class="info-row"><span>Status</span>
+                        <span class="badge-modern @BadgeCls(pedido.Status)">@pedido.StatusNome</span>
+                    </div>
+                    <div class="info-row"><span>Entrega</span>
+                        <strong>@(pedido.DataEntrega?.ToString("dd/MM/yyyy") ?? "—")</strong>
+                    </div>
+                    <div class="info-row"><span>Total</span>
+                        <strong style="color:var(--brand-700);font-size:1rem">@pedido.Total.ToString("C2")</strong>
+                    </div>
+                    <div class="info-row"><span>Criado em</span>
+                        <strong>@pedido.CriadoEm.ToString("dd/MM/yyyy")</strong>
+                    </div>
+                    @if (!string.IsNullOrEmpty(pedido.Observacoes))
+                    {
+                        <div style="padding:.75rem 1.25rem;font-size:.82rem;color:var(--surface-600);border-top:1px solid var(--surface-100)">
+                            <div style="font-weight:600;margin-bottom:.25rem">Observações</div>
+                            @pedido.Observacoes
+                        </div>
                     }
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white fw-semibold">Informações</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Cliente:</strong> @pedido.NomeCliente</li>
-                    <li class="list-group-item"><strong>Status:</strong> @pedido.StatusNome</li>
-                    <li class="list-group-item"><strong>Entrega:</strong> @(pedido.DataEntrega?.ToString("dd/MM/yyyy") ?? "Não definida")</li>
-                    @if (!string.IsNullOrEmpty(pedido.Observacoes))
-                    {
-                        <li class="list-group-item"><strong>Obs:</strong> @pedido.Observacoes</li>
-                    }
-                    <li class="list-group-item"><strong>Criado:</strong> @pedido.CriadoEm.ToString("dd/MM/yyyy HH:mm")</li>
-                </ul>
-            </div>
+
+            @if (layouts.Any())
+            {
+                <div class="card-modern">
+                    <div class="card-header-modern">
+                        <span class="card-title"><i class="bi bi-palette2 text-primary"></i> Fichas do Cliente</span>
+                    </div>
+                    <div style="padding:.5rem">
+                        @foreach (var l in layouts.Take(4))
+                        {
+                            <div class="ficha-mini">
+                                <img src="@AvatarUrl(l)" alt="@l.Modelo"
+                                     onerror="this.src='/img/placeholder.svg'" />
+                                <div>
+                                    <div style="font-size:.8rem;font-weight:600">@l.Modelo</div>
+                                    <div style="font-size:.72rem;color:var(--surface-400)">@l.Cores</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
 }
@@ -163,6 +356,24 @@ else
     private bool carregando = true, mostrarItemForm, salvandoItem;
     private string erroStatus = "", erroItem = "";
 
+    private static readonly (string label, string icon, Models.StatusPedido st)[] Pipeline =
+    [
+        ("Rascunho",    "bi-pencil",          Models.StatusPedido.Rascunho),
+        ("Confirmado",  "bi-check-circle",    Models.StatusPedido.Confirmado),
+        ("Em Produção", "bi-gear",            Models.StatusPedido.EmProducao),
+        ("Concluído",   "bi-check2-all",      Models.StatusPedido.Concluido),
+    ];
+
+    private static int PipelineIdx(Models.StatusPedido s) => s switch
+    {
+        Models.StatusPedido.Rascunho   => 0,
+        Models.StatusPedido.Confirmado => 1,
+        Models.StatusPedido.EmProducao => 2,
+        Models.StatusPedido.Concluido  => 3,
+        Models.StatusPedido.Cancelado  => -1,
+        _ => 0
+    };
+
     protected override async Task OnInitializedAsync()
     {
         pedido = await Api.ObterPedidoAsync(Id);
@@ -171,22 +382,24 @@ else
         carregando = false;
     }
 
-    private void Voltar() => Nav.NavigateTo("/pedidos");
-    private Task Confirmar() => AlterarStatus("confirmar");
+    private Task Confirmar()      => AlterarStatus("confirmar");
     private Task CancelarPedido() => AlterarStatus("cancelar");
-    private Task IniciarProducao() => AlterarStatus("producao");
-    private Task Concluir() => AlterarStatus("concluir");
+    private Task IniciarProducao()=> AlterarStatus("producao");
+    private Task Concluir()       => AlterarStatus("concluir");
 
     private async Task AlterarStatus(string acao)
     {
         erroStatus = "";
         var (sucesso, erro) = await Api.AlterarStatusPedidoAsync(Id, acao);
         if (sucesso) pedido = await Api.ObterPedidoAsync(Id);
-        else erroStatus = erro ?? "Erro.";
+        else erroStatus = erro ?? "Erro ao alterar status.";
     }
 
     private async Task AdicionarItem()
     {
+        if (novoItem.LayoutId == Guid.Empty) { erroItem = "Selecione um modelo."; return; }
+        if (novoItem.Quantidade <= 0)        { erroItem = "Quantidade inválida."; return; }
+
         salvandoItem = true;
         erroItem = "";
         var (sucesso, erro) = await Api.AdicionarItemAsync(Id, novoItem);
@@ -200,13 +413,44 @@ else
         salvandoItem = false;
     }
 
-    private static string BadgeStatus(Models.StatusPedido s) => s switch
+    private static string AvatarUrl(Models.LayoutDto l)
     {
-        Models.StatusPedido.Rascunho   => "bg-secondary",
-        Models.StatusPedido.Confirmado => "bg-primary",
-        Models.StatusPedido.EmProducao => "bg-warning text-dark",
-        Models.StatusPedido.Concluido  => "bg-success",
-        Models.StatusPedido.Cancelado  => "bg-danger",
-        _ => "bg-secondary"
+        var tipo  = l.TipoProduto switch
+        {
+            Models.TipoProduto.CamisaPolo  => "polo shirt",
+            Models.TipoProduto.CamisaMalha => "t-shirt",
+            Models.TipoProduto.Jaleco      => "work jacket",
+            _ => l.TipoProduto.ToString().ToLower()
+        };
+        var prompt = $"professional fashion mannequin wearing {tipo}, {l.Cores.ToLower()} color, {l.Tecido} fabric, front view, white studio background, full body, product photography";
+        var seed = l.Id.GetHashCode() & 0x7FFFFFFF;
+        return $"https://image.pollinations.ai/prompt/{Uri.EscapeDataString(prompt)}?width=80&height=110&model=flux&seed={seed}&nologo=true";
+    }
+
+    private static string NomeTipo(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.CamisaPolo  => "Polo",
+        Models.TipoProduto.CamisaMalha => "Malha",
+        Models.TipoProduto.Jaleco      => "Jaleco",
+        _ => t.ToString()
+    };
+
+    private static string NomeLogomarca(Models.TipoLogomarca t) => t switch
+    {
+        Models.TipoLogomarca.Bordado    => "Bordado",
+        Models.TipoLogomarca.SilkScreen => "Silk",
+        Models.TipoLogomarca.Sublimacao => "Sublimação",
+        Models.TipoLogomarca.Transfer   => "Transfer",
+        _ => t.ToString()
+    };
+
+    private static string BadgeCls(Models.StatusPedido s) => s switch
+    {
+        Models.StatusPedido.Rascunho   => "draft",
+        Models.StatusPedido.Confirmado => "info",
+        Models.StatusPedido.EmProducao => "warning",
+        Models.StatusPedido.Concluido  => "success",
+        Models.StatusPedido.Cancelado  => "danger",
+        _ => "draft"
     };
 }

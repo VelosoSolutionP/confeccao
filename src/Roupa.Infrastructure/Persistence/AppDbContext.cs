@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>, IUnitOfWork
     public DbSet<Layout> Layouts => Set<Layout>();
     public DbSet<Pedido> Pedidos => Set<Pedido>();
     public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>();
+    public DbSet<Parceiro> Parceiros => Set<Parceiro>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

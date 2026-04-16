@@ -1,0 +1,55 @@
+@page "/estoque"
+@attribute [Authorize]
+
+<PageTitle>Estoque</PageTitle>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Estoque</div>
+        <div class="page-subtitle">Controle de materiais, tecidos e insumos</div>
+    </div>
+    <span class="badge-modern warning" style="font-size:.8rem;padding:.4rem .9rem">
+        <i class="bi bi-hammer"></i> Em desenvolvimento
+    </span>
+</div>
+
+<!-- PREVIEW DO MÓDULO -->
+<div class="modulo-preview-grid">
+    <div class="modulo-preview-card blue">
+        <div class="mp-icon"><i class="bi bi-layers"></i></div>
+        <div class="mp-title">Tecidos & Insumos</div>
+        <div class="mp-desc">Controle de metros disponíveis por tipo de tecido, cor e fornecedor.</div>
+    </div>
+    <div class="modulo-preview-card green">
+        <div class="mp-icon"><i class="bi bi-arrow-down-circle"></i></div>
+        <div class="mp-title">Entradas</div>
+        <div class="mp-desc">Registro de compras e recebimento de materiais com NF.</div>
+    </div>
+    <div class="modulo-preview-card yellow">
+        <div class="mp-icon"><i class="bi bi-arrow-up-circle"></i></div>
+        <div class="mp-title">Saídas por Pedido</div>
+        <div class="mp-desc">Baixa automática ao confirmar produção de cada pedido.</div>
+    </div>
+    <div class="modulo-preview-card cyan">
+        <div class="mp-icon"><i class="bi bi-exclamation-triangle"></i></div>
+        <div class="mp-title">Alertas de Ruptura</div>
+        <div class="mp-desc">Notificação quando o estoque cai abaixo do mínimo configurado.</div>
+    </div>
+</div>
+
+<div class="card-modern" style="margin-top:1.5rem">
+    <div class="card-body-modern">
+        <div style="display:flex;align-items:center;gap:1rem;padding:1.5rem 0">
+            <div style="font-size:3rem;opacity:.3"><i class="bi bi-boxes"></i></div>
+            <div>
+                <div style="font-weight:700;font-size:1rem;margin-bottom:.25rem">Módulo em construção</div>
+                <div style="color:var(--surface-400);font-size:.875rem;max-width:500px">
+                    O módulo de estoque está sendo desenvolvido. Em breve você poderá controlar
+                    tecidos, aviamentos, rastrear consumo por pedido e receber alertas de ruptura.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code { }

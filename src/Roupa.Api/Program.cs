@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Roupa.Application;
@@ -69,6 +70,13 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+// Auto-migrar banco ao iniciar (seguro: só aplica migrações pendentes)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<Roupa.Infrastructure.Persistence.AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 await Roupa.Infrastructure.DependencyInjection.SeedRolesAsync(app.Services);
 

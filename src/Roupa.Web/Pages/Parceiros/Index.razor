@@ -1,0 +1,191 @@
+@page "/parceiros"
+@attribute [Authorize]
+@inject ApiService Api
+
+<PageTitle>Parceiros</PageTitle>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Parceiros</div>
+        <div class="page-subtitle">Terceiros, ateliês e costureiros externos</div>
+    </div>
+    <button class="btn-primary-modern" @onclick="AbrirDrawer">
+        <i class="bi bi-plus-lg"></i> Novo Parceiro
+    </button>
+</div>
+
+@if (mostrarDrawer)
+{
+    <div class="drawer-overlay" @onclick="FecharDrawer"></div>
+    <div class="drawer">
+        <div class="drawer-header">
+            <span class="drawer-title"><i class="bi bi-people-fill me-2 text-primary"></i>Novo Parceiro</span>
+            <button class="drawer-close" @onclick="FecharDrawer"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="drawer-body form-modern">
+            @if (!string.IsNullOrEmpty(erroForm))
+            {
+                <div class="form-error-banner"><i class="bi bi-exclamation-circle-fill"></i> @erroForm</div>
+            }
+
+            <div class="section-divider">Identificação</div>
+            <div class="form-group">
+                <label>Nome / Razão Social *</label>
+                <input class="input-field @(invalidos.Contains("nome") ? "invalido" : "")"
+                       @bind="novoP.Nome" placeholder="Ex: Costureiras Silva & Irmãs" />
+                @if (invalidos.Contains("nome")) { <span class="campo-erro">Informe o nome</span> }
+            </div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>CPF / CNPJ</label>
+                        <input class="input-field" @bind="novoP.CpfCnpj" placeholder="000.000.000-00" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Especialidade</label>
+                        <select class="input-field" @bind="novoP.Especialidade" style="appearance:auto">
+                            <option value="">Selecione...</option>
+                            @foreach (var e in especialidades)
+                            {
+                                <option value="@e">@e</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">Contato</div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Telefone / WhatsApp</label>
+                        <input class="input-field" @bind="novoP.Telefone" placeholder="(00) 00000-0000" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Cidade</label>
+                        <input class="input-field" @bind="novoP.Cidade" placeholder="São Paulo" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input class="input-field" type="email" @bind="novoP.Email" placeholder="contato@atelie.com" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">Observações</div>
+            <div class="form-group">
+                <textarea class="input-field" rows="3" @bind="novoP.Observacoes"
+                          placeholder="Capacidade, prazo médio, condições de pagamento..."></textarea>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-ghost" @onclick="FecharDrawer">Cancelar</button>
+            <button class="btn-primary-modern" @onclick="Salvar" disabled="@salvando">
+                @if (salvando) { <span class="spinner-border spinner-border-sm"></span> }
+                else { <i class="bi bi-check-lg"></i> }
+                Salvar Parceiro
+            </button>
+        </div>
+    </div>
+}
+
+@if (carregando)
+{
+    <div class="loading-center"><div class="spinner-border text-primary"></div></div>
+}
+else if (!parceiros.Any())
+{
+    <div class="card-modern">
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <p>Nenhum parceiro cadastrado.</p>
+            <button class="btn-primary-modern mt-3" @onclick="AbrirDrawer">
+                <i class="bi bi-plus-lg"></i> Cadastrar primeiro parceiro
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="parceiro-grid">
+        @foreach (var p in parceiros)
+        {
+            <div class="parceiro-card">
+                <div class="parceiro-avatar">
+                    @(p.Nome.Length > 0 ? p.Nome[0].ToString().ToUpper() : "?")
+                </div>
+                <div class="parceiro-info">
+                    <div class="parceiro-nome">@p.Nome</div>
+                    @if (!string.IsNullOrEmpty(p.Especialidade))
+                    {
+                        <span class="badge-modern info" style="font-size:.68rem">@p.Especialidade</span>
+                    }
+                    <div class="parceiro-meta">
+                        @if (!string.IsNullOrEmpty(p.Telefone))
+                        {
+                            <span><i class="bi bi-telephone"></i> @p.Telefone</span>
+                        }
+                        @if (!string.IsNullOrEmpty(p.Cidade))
+                        {
+                            <span><i class="bi bi-geo-alt"></i> @p.Cidade</span>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(p.Observacoes))
+                    {
+                        <p class="parceiro-obs">@p.Observacoes</p>
+                    }
+                </div>
+                <div class="parceiro-status">
+                    <span class="badge-modern @(p.Ativo ? "success" : "danger")">
+                        @(p.Ativo ? "Ativo" : "Inativo")
+                    </span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Models.ParceiroDto> parceiros = [];
+    private Models.CriarParceiroModel novoP = new();
+    private HashSet<string> invalidos = [];
+    private bool carregando = true, mostrarDrawer, salvando;
+    private string erroForm = "";
+
+    private static readonly string[] especialidades = [
+        "Costura em geral", "Bordado", "Silk Screen", "Sublimação",
+        "Transfer", "Corte", "Modelagem", "Estamparia", "Tapeçaria", "Acabamento"
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        parceiros = await Api.ListarParceirosAsync();
+        carregando = false;
+    }
+
+    private void AbrirDrawer() { mostrarDrawer = true; erroForm = ""; invalidos.Clear(); novoP = new(); }
+    private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; invalidos.Clear(); }
+
+    private async Task Salvar()
+    {
+        invalidos.Clear();
+        if (string.IsNullOrWhiteSpace(novoP.Nome)) invalidos.Add("nome");
+        if (invalidos.Any()) return;
+
+        salvando = true;
+        var (sucesso, dados, erro) = await Api.CriarParceiroAsync(novoP);
+        if (sucesso && dados is not null)
+        {
+            parceiros.Insert(0, dados);
+            FecharDrawer();
+        }
+        else erroForm = erro ?? "Erro ao salvar.";
+        salvando = false;
+    }
+}

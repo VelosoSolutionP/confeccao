@@ -1,0 +1,54 @@
+@page "/financeiro"
+@attribute [Authorize]
+
+<PageTitle>Financeiro</PageTitle>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Financeiro</div>
+        <div class="page-subtitle">Receitas, despesas e fluxo de caixa</div>
+    </div>
+    <span class="badge-modern warning" style="font-size:.8rem;padding:.4rem .9rem">
+        <i class="bi bi-hammer"></i> Em desenvolvimento
+    </span>
+</div>
+
+<div class="modulo-preview-grid">
+    <div class="modulo-preview-card blue">
+        <div class="mp-icon"><i class="bi bi-cash-coin"></i></div>
+        <div class="mp-title">Receitas</div>
+        <div class="mp-desc">Pagamentos recebidos vinculados a pedidos concluídos.</div>
+    </div>
+    <div class="modulo-preview-card danger">
+        <div class="mp-icon"><i class="bi bi-credit-card"></i></div>
+        <div class="mp-title">Despesas</div>
+        <div class="mp-desc">Custos com tecidos, parceiros, frete e outros.</div>
+    </div>
+    <div class="modulo-preview-card green">
+        <div class="mp-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="mp-title">Fluxo de Caixa</div>
+        <div class="mp-desc">Visão mensal de entradas e saídas com projeção.</div>
+    </div>
+    <div class="modulo-preview-card yellow">
+        <div class="mp-icon"><i class="bi bi-receipt"></i></div>
+        <div class="mp-title">NF-e / NFS-e</div>
+        <div class="mp-desc">Emissão e controle de notas fiscais eletrônicas.</div>
+    </div>
+</div>
+
+<div class="card-modern" style="margin-top:1.5rem">
+    <div class="card-body-modern">
+        <div style="display:flex;align-items:center;gap:1rem;padding:1.5rem 0">
+            <div style="font-size:3rem;opacity:.3"><i class="bi bi-wallet2"></i></div>
+            <div>
+                <div style="font-weight:700;font-size:1rem;margin-bottom:.25rem">Módulo em construção</div>
+                <div style="color:var(--surface-400);font-size:.875rem;max-width:500px">
+                    O módulo financeiro está sendo desenvolvido. Em breve: lançamentos,
+                    conciliação bancária, comissões de parceiros e integração com NF-e.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code { }

@@ -94,6 +94,23 @@ public class ApiService
         return (false, null, err?.Erro ?? "Erro ao criar layout.");
     }
 
+    // ── PARCEIROS ─────────────────────────────────────────────────
+    public async Task<List<ParceiroDto>> ListarParceirosAsync(bool apenasAtivos = true)
+    {
+        await PrepararHeaderAsync();
+        return await _http.GetFromJsonAsync<List<ParceiroDto>>($"api/parceiros?apenasAtivos={apenasAtivos}") ?? [];
+    }
+
+    public async Task<(bool sucesso, ParceiroDto? dados, string? erro)> CriarParceiroAsync(CriarParceiroModel model)
+    {
+        await PrepararHeaderAsync();
+        var resp = await _http.PostAsJsonAsync("api/parceiros", model);
+        if (resp.IsSuccessStatusCode)
+            return (true, await resp.Content.ReadFromJsonAsync<ParceiroDto>(), null);
+        var err = await resp.Content.ReadFromJsonAsync<ErroResponse>();
+        return (false, null, err?.Erro ?? "Erro ao criar parceiro.");
+    }
+
     // ── PEDIDOS ────────────────────────────────────────────────────
     public async Task<List<PedidoDto>> ListarPedidosAsync()
     {

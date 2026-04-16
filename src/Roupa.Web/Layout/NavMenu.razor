@@ -5,14 +5,14 @@
         </div>
         <div>
             <div class="brand-name">Roupa Solution</div>
-            <div class="brand-sub">Gestão de Uniformes</div>
+            <div class="brand-sub">Gestão Têxtil</div>
         </div>
     </div>
 
     <nav class="sidenav-nav">
         <AuthorizeView>
             <Authorized>
-                <div class="nav-section-label">MENU</div>
+                <div class="nav-section-label">PRINCIPAL</div>
                 <NavLink class="sidenav-link" href="" Match="NavLinkMatch.All">
                     <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
                     <span>Dashboard</span>
@@ -21,13 +21,31 @@
                     <span class="nav-icon"><i class="bi bi-buildings"></i></span>
                     <span>Clientes</span>
                 </NavLink>
+                <NavLink class="sidenav-link" href="pedidos">
+                    <span class="nav-icon"><i class="bi bi-bag-check"></i></span>
+                    <span>Pedidos</span>
+                </NavLink>
+
+                <div class="nav-section-label" style="margin-top:.75rem">PRODUÇÃO</div>
                 <NavLink class="sidenav-link" href="layouts">
                     <span class="nav-icon"><i class="bi bi-palette2"></i></span>
                     <span>Fichas de Layout</span>
                 </NavLink>
-                <NavLink class="sidenav-link" href="pedidos">
-                    <span class="nav-icon"><i class="bi bi-bag-check"></i></span>
-                    <span>Pedidos</span>
+                <NavLink class="sidenav-link" href="parceiros">
+                    <span class="nav-icon"><i class="bi bi-people"></i></span>
+                    <span>Parceiros</span>
+                </NavLink>
+                <NavLink class="sidenav-link" href="estoque">
+                    <span class="nav-icon"><i class="bi bi-boxes"></i></span>
+                    <span>Estoque</span>
+                    <span class="nav-badge">Em breve</span>
+                </NavLink>
+
+                <div class="nav-section-label" style="margin-top:.75rem">GESTÃO</div>
+                <NavLink class="sidenav-link" href="financeiro">
+                    <span class="nav-icon"><i class="bi bi-cash-coin"></i></span>
+                    <span>Financeiro</span>
+                    <span class="nav-badge">Em breve</span>
                 </NavLink>
             </Authorized>
         </AuthorizeView>
