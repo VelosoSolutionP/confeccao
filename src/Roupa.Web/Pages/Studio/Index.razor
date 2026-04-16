@@ -3,6 +3,7 @@
 @inject ApiService Api
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@implements IDisposable
 
 <PageTitle>Studio — Provador Virtual</PageTitle>
 
@@ -18,14 +19,15 @@
         @if (etapa != Etapa.Avatares)
         {
             <div class="studio-breadcrumb">
-                <span class="@(etapa == Etapa.GuardaRoupa ? "ativo" : "")"
-                      style="cursor:pointer" @onclick="VoltarAvatares">
+                <span style="cursor:pointer;color:rgba(255,255,255,.4)" @onclick="VoltarAvatares">
                     <i class="bi bi-person-circle"></i> @avatarAtual!.Nome
                 </span>
                 @if (etapa == Etapa.Resultado)
                 {
-                    <i class="bi bi-chevron-right" style="color:rgba(255,255,255,.3)"></i>
-                    <span class="ativo"><i class="bi bi-shirt-fill"></i> @fichaAtual!.Modelo</span>
+                    <i class="bi bi-chevron-right" style="color:rgba(255,255,255,.2)"></i>
+                    <span style="color:#a78bfa;font-weight:600">
+                        <i class="bi bi-shirt-fill"></i> @fichaAtual!.Modelo
+                    </span>
                 }
             </div>
         }
@@ -43,37 +45,63 @@
         </button>
     </div>
 
-    <!-- ══════════ ETAPA 1 — ESCOLHA O PERSONAGEM ══════════ -->
+    <!-- ══ ETAPA 1 — TV MODE: avatares passando ══ -->
     @if (etapa == Etapa.Avatares)
     {
-        <div class="studio-etapa-title">
-            <h2>Quem vai experimentar?</h2>
-            <p>Escolha o personagem que vai vestir as roupas</p>
-        </div>
-        <div class="studio-avatares-grid">
-            @foreach (var av in Avatares)
-            {
-                <div class="studio-av-card" @onclick="() => EscolherAvatar(av)">
-                    <div class="studio-av-foto">
-                        <img src="@AvatarUrl(av)" alt="@av.Nome"
-                             onerror="this.src='/img/placeholder.svg'" loading="lazy" />
-                        <div class="studio-av-overlay">
-                            <i class="bi bi-bag-fill"></i>
-                            Ver roupas
-                        </div>
+        <div class="studio-tv">
+            <!-- Avatar em destaque (TV) -->
+            <div class="studio-tv-stage" @onclick="() => EscolherAvatar(Avatares[tvIndex])">
+                <img src="@AvatarUrl(Avatares[tvIndex])"
+                     alt="@Avatares[tvIndex].Nome"
+                     class="studio-tv-img @(tvTransition ? "fade" : "")"
+                     onerror="this.src='/img/placeholder.svg'" />
+
+                <div class="studio-tv-info">
+                    <div class="studio-tv-nome">@Avatares[tvIndex].Nome</div>
+                    <div class="studio-tv-tipo">@Avatares[tvIndex].Descricao</div>
+                    <div class="studio-tv-cta">
+                        <i class="bi bi-bag-fill"></i> Clique para experimentar roupas
                     </div>
-                    <div class="studio-av-nome">@av.Nome</div>
-                    <div class="studio-av-tipo">@av.Descricao</div>
                 </div>
-            }
+
+                <!-- Botão pausar/retomar -->
+                <button class="studio-tv-pause" @onclick:stopPropagation="true"
+                        @onclick="TogglePause" title="@(pausado ? "Retomar" : "Pausar")">
+                    <i class="bi @(pausado ? "bi-play-fill" : "bi-pause-fill")"></i>
+                </button>
+            </div>
+
+            <!-- Miniaturas dos 4 avatares -->
+            <div class="studio-tv-thumbs">
+                @for (int i = 0; i < Avatares.Length; i++)
+                {
+                    var idx = i;
+                    var av  = Avatares[idx];
+                    <div class="studio-tv-thumb @(tvIndex == idx ? "ativo" : "")"
+                         @onclick="() => SelecionarThumb(idx)">
+                        <img src="@AvatarThumbUrl(av)" alt="@av.Nome"
+                             onerror="this.src='/img/placeholder.svg'" loading="lazy" />
+                        <span>@av.Nome</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Dots indicador -->
+            <div class="studio-tv-dots">
+                @for (int i = 0; i < Avatares.Length; i++)
+                {
+                    var idx = i;
+                    <span class="studio-tv-dot @(tvIndex == idx ? "ativo" : "")"
+                          @onclick="() => SelecionarThumb(idx)"></span>
+                }
+            </div>
         </div>
     }
 
-    <!-- ══════════ ETAPA 2 — GUARDA-ROUPA ══════════ -->
+    <!-- ══ ETAPA 2 — GUARDA-ROUPA ══ -->
     @if (etapa == Etapa.GuardaRoupa)
     {
         <div class="studio-guardaroupa">
-            <!-- Avatar lateral -->
             <div class="studio-av-lateral">
                 <img src="@AvatarUrl(avatarAtual!)" alt="@avatarAtual!.Nome"
                      onerror="this.src='/img/placeholder.svg'" />
@@ -81,11 +109,10 @@
                 <div class="studio-av-lateral-tipo">@avatarAtual.Descricao</div>
             </div>
 
-            <!-- Roupas -->
             <div class="studio-roupas">
                 <div class="studio-roupas-title">
                     <i class="bi bi-bag-fill"></i>
-                    Escolha a peça para @avatarAtual!.Nome experimentar
+                    O que @avatarAtual!.Nome vai experimentar?
                 </div>
 
                 @if (carregando)
@@ -98,7 +125,7 @@
                 {
                     <div class="studio-sem-roupas">
                         <i class="bi bi-bag-x"></i>
-                        <p>Nenhuma peça cadastrada ainda.</p>
+                        <p>Nenhuma peça cadastrada.</p>
                         <a href="/layouts" class="btn-primary-modern">
                             <i class="bi bi-plus-lg"></i> Cadastrar peças
                         </a>
@@ -137,11 +164,10 @@
         </div>
     }
 
-    <!-- ══════════ ETAPA 3 — RESULTADO ══════════ -->
+    <!-- ══ ETAPA 3 — RESULTADO ══ -->
     @if (etapa == Etapa.Resultado)
     {
         <div class="studio-resultado">
-            <!-- Foto gerada -->
             <div class="studio-resultado-foto">
                 @if (gerando)
                 {
@@ -149,7 +175,7 @@
                         <div class="studio-gerando-spinner"></div>
                         <div class="studio-gerando-txt">
                             <strong>Gerando visualização...</strong><br />
-                            <span>Aplicando @fichaAtual!.Cores em @fichaAtual.Modelo</span>
+                            <span>@fichaAtual!.Cores — @fichaAtual.Modelo</span>
                         </div>
                     </div>
                 }
@@ -157,7 +183,6 @@
                      alt="@avatarAtual!.Nome vestindo @fichaAtual!.Modelo"
                      class="@(gerando ? "blur" : "")"
                      onerror="this.src='/img/placeholder.svg'" />
-
                 @if (!gerando)
                 {
                     <div class="studio-resultado-label">
@@ -166,7 +191,6 @@
                 }
             </div>
 
-            <!-- Ficha e ações -->
             <div class="studio-resultado-info">
                 <div class="studio-res-titulo">@fichaAtual!.Modelo</div>
                 <div class="studio-res-linha"><b>Personagem:</b> @avatarAtual!.Nome</div>
@@ -174,19 +198,15 @@
                 <div class="studio-res-linha"><b>Tecido:</b> @fichaAtual.Tecido</div>
                 <div class="studio-res-linha">
                     <b>Cores:</b>
-                    <span style="display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-left:.3rem">
-                        @foreach (var hex in CoresHex(fichaAtual.Cores))
-                        {
-                            <span class="studio-cor-bolinha lg" style="background:@hex"></span>
-                        }
-                        @fichaAtual.Cores
-                    </span>
+                    @foreach (var hex in CoresHex(fichaAtual.Cores))
+                    {
+                        <span class="studio-cor-bolinha lg" style="background:@hex;margin-left:.3rem"></span>
+                    }
+                    <span style="margin-left:.35rem">@fichaAtual.Cores</span>
                 </div>
-                <div class="studio-res-linha"><b>Logomarca:</b> @NomeLogomarca(fichaAtual.TipoLogomarca) — @fichaAtual.PosicaoLogomarca</div>
-                @if (!string.IsNullOrEmpty(fichaAtual.Outros))
-                {
-                    <div class="studio-res-linha"><b>Obs:</b> @fichaAtual.Outros</div>
-                }
+                <div class="studio-res-linha">
+                    <b>Logomarca:</b> @NomeLogomarca(fichaAtual.TipoLogomarca) — @fichaAtual.PosicaoLogomarca
+                </div>
 
                 <div class="studio-resultado-btns">
                     <a class="studio-btn-download"
@@ -215,27 +235,27 @@
     }
 </div>
 
-<!-- PRINT: Proposta para cliente -->
+<!-- PRINT -->
 @if (etapa == Etapa.Resultado && avatarAtual is not null && fichaAtual is not null)
 {
     <div class="proposta-print">
         <div class="proposta-header">
             <div class="proposta-logo"><i class="bi bi-scissors"></i> Roupa Solution</div>
             <div class="proposta-titulo">PROPOSTA DE UNIFORME</div>
-            <div class="proposta-data">Gerado em @DateTime.Now.ToString("dd/MM/yyyy")</div>
+            <div class="proposta-data">@DateTime.Now.ToString("dd/MM/yyyy")</div>
         </div>
         <div class="proposta-body">
             <img src="@imgResultado" class="proposta-avatar-img" />
             <div class="proposta-detalhes">
                 <h2>@fichaAtual.Modelo</h2>
-                <p><b>Personagem de referência:</b> @avatarAtual.Nome (@avatarAtual.Descricao)</p>
+                <p><b>Personagem:</b> @avatarAtual.Nome (@avatarAtual.Descricao)</p>
                 <p><b>Tipo:</b> @NomeTipo(fichaAtual.TipoProduto)</p>
                 <p><b>Tecido:</b> @fichaAtual.Tecido</p>
                 <p><b>Cores:</b> @fichaAtual.Cores</p>
                 <p><b>Logomarca:</b> @NomeLogomarca(fichaAtual.TipoLogomarca) — @fichaAtual.PosicaoLogomarca</p>
                 @if (!string.IsNullOrWhiteSpace(fichaAtual.Outros))
                 {
-                    <p><b>Observações:</b> @fichaAtual.Outros</p>
+                    <p><b>Obs:</b> @fichaAtual.Outros</p>
                 }
             </div>
         </div>
@@ -251,31 +271,36 @@
     static readonly AvatarDef[] Avatares =
     [
         new("ketlen", "Ketlen", "Modelo Feminina",
-            "photorealistic photograph of a young Brazilian woman, light brown skin, long dark wavy hair, slim athletic build, natural makeup, looking at camera, full body, standing, arms slightly open, white seamless studio background, professional DSLR fashion photo, sharp focus, 8k",
+            "RAW photo, photorealistic, young Brazilian woman, light tan skin, long dark wavy hair, slim figure, natural makeup, almond eyes, full lips, standing relaxed, full body, white seamless studio background, Canon EOS 5D, 85mm, studio softbox lighting, 8k UHD, sharp focus",
             3001),
         new("jorge", "Jorge", "Modelo Masculino",
-            "photorealistic photograph of a Black Brazilian man, dark skin, athletic muscular build, short fade haircut, natural expression, looking at camera, full body, standing, white seamless studio background, professional DSLR fashion photo, sharp focus, 8k",
+            "RAW photo, photorealistic, Black Brazilian man, dark skin, short fade haircut, strong jawline, dark brown eyes, athletic build, standing confident, full body, white seamless studio background, Canon EOS 5D, 85mm, studio softbox lighting, 8k UHD, sharp focus",
             3002),
         new("micaela", "Micaela", "Modelo Feminina Negra",
-            "photorealistic photograph of a Black Brazilian woman, dark skin, natural curly afro hair, medium build, warm confident expression, looking at camera, full body, standing, white seamless studio background, professional DSLR fashion photo, sharp focus, 8k",
+            "RAW photo, photorealistic, Black Brazilian woman, dark skin, natural tight curly afro hair, warm brown eyes, medium athletic build, warm confident smile, standing, full body, white seamless studio background, Canon EOS 5D, 85mm, studio softbox lighting, 8k UHD, sharp focus",
             3003),
-        new("veloso", "Veloso", "Modelo Estilo Nerd",
-            "photorealistic photograph of a young Brazilian man with round glasses, slightly messy brown hair, slim build, friendly intelligent expression, casual clothing, looking at camera, full body, standing, white seamless studio background, professional DSLR photo, sharp focus, 8k",
+        new("veloso", "Veloso", "Estilo Nerd",
+            "RAW photo, photorealistic, young Brazilian man, medium skin tone, round glasses, slightly wavy brown hair, slim build, intelligent friendly expression, casual smart outfit, standing, full body, white seamless studio background, Canon EOS 5D, 50mm, natural studio lighting, 8k UHD, sharp focus",
             3004),
     ];
 
     static string AvatarUrl(AvatarDef av) =>
         "https://image.pollinations.ai/prompt/" +
         Uri.EscapeDataString(av.Prompt) +
-        "?width=360&height=540&model=flux&seed=" + av.Seed + "&nologo=true";
+        "?width=480&height=720&model=flux&seed=" + av.Seed + "&nologo=true&enhance=true";
+
+    static string AvatarThumbUrl(AvatarDef av) =>
+        "https://image.pollinations.ai/prompt/" +
+        Uri.EscapeDataString(av.Prompt) +
+        "?width=120&height=180&model=flux&seed=" + av.Seed + "&nologo=true";
 
     static string FlatLayUrl(Models.LayoutDto f)
     {
         var tipo = NomeTipoEn(f.TipoProduto);
         var cor  = CorIngles(f.Cores);
         var p    = "professional product photography, flat lay fashion " + tipo +
-                   ", solid " + cor + " color, opaque " + cor + " fabric, " +
-                   f.Tecido + ", isolated on pure white background, vibrant color, 8k";
+                   ", solid opaque " + cor + " color, " + f.Tecido + " fabric" +
+                   ", isolated pure white background, vibrant saturated color, no shadows, 8k";
         return "https://image.pollinations.ai/prompt/" +
                Uri.EscapeDataString(p) +
                "?width=320&height=400&model=flux&seed=" + (f.Id.GetHashCode() & 0x7FFFFFFF) + "&nologo=true";
@@ -286,42 +311,41 @@
         var tipo   = NomeTipoEn(f.TipoProduto);
         var cor    = CorIngles(f.Cores);
         var logo   = NomeLogomarcaEn(f.TipoLogomarca) + " logo on " + f.PosicaoLogomarca;
-        var avBase = av.Prompt.Split(',')[0].Replace("photorealistic photograph of a", "").Trim();
+        var avBase = av.Prompt.Split(',')[0].Replace("RAW photo, photorealistic,", "").Trim();
 
-        var prompt = "photorealistic fashion photograph, " + avBase +
-                     " wearing a " + cor + " solid color " + tipo +
-                     ", the " + tipo + " is clearly " + cor + " colored, opaque " + cor + " fabric" +
-                     ", " + f.Tecido + ", " + logo +
-                     ", full body, white seamless studio background, professional DSLR, sharp focus, 8k";
+        var prompt = "RAW photo, photorealistic, " + avBase +
+                     " wearing a " + cor + " " + tipo +
+                     ", the garment is solid opaque " + cor + " colored, " + f.Tecido + " fabric" +
+                     ", with " + logo +
+                     ", full body, white seamless studio background, Canon EOS 5D, studio lighting, 8k UHD, sharp focus";
 
-        var seed = (av.Seed * 7 + f.Id.GetHashCode()) & 0x7FFFFFFF;
+        var seed = (av.Seed * 13 + f.Id.GetHashCode()) & 0x7FFFFFFF;
         return "https://image.pollinations.ai/prompt/" +
                Uri.EscapeDataString(prompt) +
-               "?width=420&height=640&model=flux&seed=" + seed + "&nologo=true";
+               "?width=480&height=720&model=flux&seed=" + seed + "&nologo=true&enhance=true";
     }
 
-    // Converte nome de cor PT → descrição inglês explícita para IA
     static string CorIngles(string cores)
     {
         var c = cores.ToLower();
         if (c.Contains("azul") && c.Contains("mar")) return "dark navy blue";
         if (c.Contains("azul") && c.Contains("roy")) return "royal blue";
-        if (c.Contains("azul") && c.Contains("cla")) return "light blue";
-        if (c.Contains("azul"))    return "blue";
-        if (c.Contains("bran"))    return "white";
-        if (c.Contains("pre"))     return "black";
+        if (c.Contains("azul") && c.Contains("cla")) return "light sky blue";
+        if (c.Contains("azul"))   return "blue";
+        if (c.Contains("bran"))   return "white";
+        if (c.Contains("pre"))    return "black";
         if (c.Contains("cza") || c.Contains("gray") || c.Contains("grey")) return "gray";
-        if (c.Contains("verm"))    return "red";
-        if (c.Contains("bord") || c.Contains("vinh")) return "dark burgundy";
-        if (c.Contains("rosa"))    return "pink";
-        if (c.Contains("verde") && c.Contains("mil")) return "military green";
-        if (c.Contains("verde"))   return "green";
-        if (c.Contains("amar"))    return "yellow";
-        if (c.Contains("lar"))     return "orange";
-        if (c.Contains("rox"))     return "purple";
+        if (c.Contains("verm"))   return "red";
+        if (c.Contains("bord") || c.Contains("vinh")) return "dark burgundy red";
+        if (c.Contains("rosa"))   return "pink";
+        if (c.Contains("verde") && c.Contains("mil")) return "military olive green";
+        if (c.Contains("verde"))  return "green";
+        if (c.Contains("amar"))   return "yellow";
+        if (c.Contains("lar"))    return "orange";
+        if (c.Contains("rox"))    return "purple";
         if (c.Contains("lilas") || c.Contains("lilá")) return "lilac";
         if (c.Contains("beg") || c.Contains("cru")) return "beige";
-        if (c.Contains("mar"))     return "brown";
+        if (c.Contains("mar"))    return "brown";
         return cores;
     }
 
@@ -389,23 +413,52 @@
         _ => ""
     };
 
-    // ── State ────────────────────────────────────────────
+    // ── State ─────────────────────────────────
     Etapa etapa = Etapa.Avatares;
     List<Models.LayoutDto> fichas = [];
     AvatarDef? avatarAtual;
     Models.LayoutDto? fichaAtual;
     string imgResultado = "";
-    bool carregando = true, gerando;
+    bool carregando = true, gerando, pausado;
     string erroStudio = "";
+
+    // TV slideshow
+    int tvIndex = 0;
+    bool tvTransition;
+    System.Threading.Timer? _tvTimer;
 
     protected override async Task OnInitializedAsync()
     {
         fichas = await Api.ListarLayoutsAsync();
         carregando = false;
+        IniciarTV();
+    }
+
+    void IniciarTV()
+    {
+        _tvTimer = new System.Threading.Timer(async _ =>
+        {
+            if (pausado || etapa != Etapa.Avatares) return;
+            tvTransition = true;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(300);
+            tvIndex = (tvIndex + 1) % Avatares.Length;
+            tvTransition = false;
+            await InvokeAsync(StateHasChanged);
+        }, null, 3500, 3500);
+    }
+
+    void TogglePause() => pausado = !pausado;
+
+    void SelecionarThumb(int idx)
+    {
+        tvIndex = idx;
+        pausado = true;
     }
 
     async Task EscolherAvatar(AvatarDef av)
     {
+        pausado = true;
         avatarAtual = av;
         fichaAtual = null;
         etapa = Etapa.GuardaRoupa;
@@ -419,6 +472,7 @@
         fichaAtual = null;
         imgResultado = "";
         erroStudio = "";
+        pausado = false;
     }
 
     async Task EscolherRoupa(Models.LayoutDto f)
@@ -433,7 +487,7 @@
         if (avatarAtual is null || fichaAtual is null) return;
         gerando = true;
         erroStudio = "";
-        imgResultado = TryOnUrl(avatarAtual, fichaAtual); // mostra imediato
+        imgResultado = TryOnUrl(avatarAtual, fichaAtual);
         StateHasChanged();
 
         try
@@ -448,10 +502,7 @@
             if (urls is not null && urls.Length > 0 && !string.IsNullOrEmpty(urls[0]))
                 imgResultado = urls[0];
         }
-        catch
-        {
-            // mantém o TryOnUrl já setado como fallback
-        }
+        catch { }
 
         gerando = false;
         StateHasChanged();
@@ -459,4 +510,6 @@
 
     async Task ImprimirProposta() =>
         await JS.InvokeVoidAsync("window.print");
+
+    public void Dispose() => _tvTimer?.Dispose();
 }

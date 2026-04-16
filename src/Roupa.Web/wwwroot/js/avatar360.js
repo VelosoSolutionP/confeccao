@@ -80,6 +80,19 @@ window.Avatar360 = {
 };
 
 // ═══════════════════════════════════════════════════════
+//  PreloadImages — aquece o cache do browser para URLs Pollinations
+// ═══════════════════════════════════════════════════════
+window.PreloadImages = {
+    preload(urls) {
+        if (!urls || !urls.length) return;
+        urls.forEach(url => {
+            const img = new Image();
+            img.src = url;
+        });
+    }
+};
+
+// ═══════════════════════════════════════════════════════
 //  OutfitAnyone — virtual try-on via Gradio API
 //  Fluxo: descrição da peça → flat-lay (Pollinations) →
 //         manequim vestido (OutfitAnyone) → 4 vistas 360°

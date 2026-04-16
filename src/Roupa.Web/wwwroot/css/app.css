@@ -1575,6 +1575,64 @@ code { color: #c02d76; }
     50% { box-shadow: 0 4px 20px rgba(124,58,237,.6); }
 }
 
+/* ─── BTN CROQUI ─── */
+.btn-croqui {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .9rem;
+    background: rgba(16,185,129,.1);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,.3);
+    border-radius: var(--radius-sm);
+    font-size: .8rem; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: background .15s, border-color .15s;
+}
+.btn-croqui:hover { background: rgba(16,185,129,.2); border-color: #34d399; }
+.btn-croqui.ativo {
+    background: rgba(52,211,153,.2);
+    border-color: #34d399;
+    color: #10b981;
+}
+
+/* ─── CROQUI PANEL ─── */
+.croqui-panel {
+    border-top: 1px solid var(--surface-200);
+    background: var(--surface-50);
+}
+.croqui-header {
+    padding: .7rem 1.25rem;
+    font-size: .82rem; font-weight: 700;
+    color: var(--surface-700);
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--surface-100);
+    border-bottom: 1px solid var(--surface-200);
+}
+.croqui-header i { color: #10b981; }
+.croqui-body {
+    display: flex; gap: 1.5rem; padding: 1.25rem;
+    flex-wrap: wrap;
+}
+.croqui-img-wrap {
+    position: relative;
+    flex: 1; min-width: 300px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--surface-200);
+    box-shadow: var(--shadow-sm);
+    cursor: zoom-in;
+}
+.croqui-img-wrap img {
+    width: 100%; display: block;
+    max-height: 400px; object-fit: contain;
+}
+.croqui-info {
+    min-width: 200px; max-width: 240px;
+    font-size: .82rem; color: var(--surface-700);
+    display: flex; flex-direction: column; gap: .3rem;
+}
+.croqui-info p { margin: 0; line-height: 1.6; }
+.croqui-info b { color: var(--surface-800); }
+
 /* ─── TRYON LOADING OVERLAY ─── */
 .tryon-loading {
     position: absolute;
@@ -1672,6 +1730,95 @@ code { color: #c02d76; }
 .studio-av-overlay i { font-size: 1.4rem; }
 .studio-av-nome { font-size: .95rem; font-weight: 700; color: #fff; }
 .studio-av-tipo { font-size: .72rem; color: rgba(255,255,255,.45); }
+
+/* ── ETAPA 1: TV mode ── */
+.studio-tv {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: .75rem 1rem 1rem;
+    gap: .75rem;
+    overflow: hidden;
+}
+.studio-tv-stage {
+    position: relative;
+    cursor: pointer;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 2.5px solid rgba(167,139,250,.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    transition: border-color .2s;
+    flex-shrink: 0;
+    width: 340px;
+    height: 510px;
+    background: #0d0d1a;
+}
+.studio-tv-stage:hover { border-color: #a78bfa; }
+.studio-tv-img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: opacity .3s;
+}
+.studio-tv-img.fade { opacity: 0; }
+.studio-tv-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 2rem 1.5rem 1.25rem;
+    background: linear-gradient(to top, rgba(8,8,15,.95) 0%, rgba(8,8,15,.5) 60%, transparent 100%);
+    pointer-events: none;
+}
+.studio-tv-nome {
+    font-size: 1.6rem; font-weight: 800; color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,.6); line-height: 1.1;
+}
+.studio-tv-tipo {
+    font-size: .78rem; color: rgba(255,255,255,.55);
+    margin-top: .2rem; font-weight: 400;
+}
+.studio-tv-cta {
+    margin-top: .5rem; font-size: .8rem;
+    color: #a78bfa; font-weight: 600;
+    display: flex; align-items: center; gap: .35rem;
+}
+.studio-tv-pause {
+    position: absolute; top: .7rem; right: .7rem;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.25);
+    background: rgba(0,0,0,.55); color: rgba(255,255,255,.8);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; backdrop-filter: blur(6px); transition: background .15s;
+}
+.studio-tv-pause:hover { background: rgba(167,139,250,.4); border-color: #a78bfa; }
+.studio-tv-thumbs {
+    display: flex; gap: .6rem; justify-content: center;
+}
+.studio-tv-thumb {
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: .25rem; transition: transform .12s;
+}
+.studio-tv-thumb:hover { transform: translateY(-2px); }
+.studio-tv-thumb img {
+    width: 64px; height: 96px; object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(255,255,255,.1);
+    transition: border-color .15s;
+}
+.studio-tv-thumb.ativo img,
+.studio-tv-thumb:hover img {
+    border-color: #a78bfa;
+    box-shadow: 0 4px 16px rgba(167,139,250,.4);
+}
+.studio-tv-thumb span { font-size: .65rem; color: rgba(255,255,255,.4); font-weight: 600; }
+.studio-tv-thumb.ativo span { color: #a78bfa; }
+.studio-tv-dots { display: flex; gap: .4rem; justify-content: center; }
+.studio-tv-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,.2); cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.studio-tv-dot.ativo { background: #a78bfa; transform: scale(1.4); }
 
 /* ── ETAPA 2: guarda-roupa ── */
 .studio-guardaroupa {

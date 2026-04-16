@@ -228,6 +228,13 @@
                 <div style="font-size:.8rem;color:var(--surface-400)">@fichaViewer.NomeCliente</div>
             </div>
             <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                <!-- Botão Croqui Técnico -->
+                <button class="btn-croqui @(mostrarCroqui ? "ativo" : "")"
+                        @onclick="ToggleCroqui"
+                        title="Croqui técnico da peça gerado por IA">
+                    <i class="bi bi-pencil-square"></i>
+                    <span>Croqui</span>
+                </button>
                 <!-- Botão OutfitAnyone -->
                 <button class="btn-outfit @(gerandoTryOn ? "loading" : "")"
                         @onclick="GerarTryOn" disabled="@gerandoTryOn" title="Gerar avatar com OutfitAnyone (virtual try-on)">
@@ -365,6 +372,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- CROQUI TÉCNICO -->
+        @if (mostrarCroqui)
+        {
+            <div class="croqui-panel">
+                <div class="croqui-header">
+                    <i class="bi bi-pencil-square"></i>
+                    Croqui Técnico — @fichaViewer.Modelo
+                    <span style="font-size:.72rem;color:var(--surface-400);font-weight:400">
+                        gerado por IA • clique na imagem para ampliar
+                    </span>
+                </div>
+                <div class="croqui-body">
+                    <div class="croqui-img-wrap">
+                        <a href="@croquiUrl" target="_blank" title="Clique para ampliar">
+                            <img src="@croquiUrl"
+                                 alt="Croqui técnico @fichaViewer.Modelo"
+                                 onerror="this.src='/img/placeholder.svg'" />
+                        </a>
+                    </div>
+                    <div class="croqui-info">
+                        <p><b>Produto:</b> @NomeTipo(fichaViewer.TipoProduto)</p>
+                        <p><b>Tecido:</b> @fichaViewer.Tecido</p>
+                        <p><b>Cores:</b> @fichaViewer.Cores</p>
+                        <p><b>Aplicação:</b> @NomeLogomarca(fichaViewer.TipoLogomarca) — @fichaViewer.PosicaoLogomarca</p>
+                        @if (fichaViewer.Medidas?.Any() == true)
+                        {
+                            <p style="margin-top:.5rem"><b>Medidas:</b></p>
+                            @foreach (var m in fichaViewer.Medidas)
+                            {
+                                <p style="margin-left:.5rem;font-size:.8rem">@m.Key: @m.Value</p>
+                            }
+                        }
+                        <a href="@croquiUrl" target="_blank" download="@($"croqui_{fichaViewer.Modelo}.jpg")"
+                           class="btn-primary-modern" style="margin-top:1rem;font-size:.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem">
+                            <i class="bi bi-download"></i> Baixar Croqui
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 }
 
@@ -470,6 +518,10 @@ else
     private string? erroTryOn;
     private Dictionary<Guid, string[]> tryOnCache = [];  // cache por ficha
 
+    // Croqui técnico state
+    private bool   mostrarCroqui;
+    private string? croquiUrl;
+
     private static readonly string[] tamanhos = ["PP","P","M","G","GG","EG","EGG","Personalizado"];
 
     protected override async Task OnInitializedAsync()
@@ -537,6 +589,38 @@ else
         fichaViewer = null;
         gerandoTryOn = false;
         erroTryOn = null;
+        mostrarCroqui = false;
+        croquiUrl = null;
+    }
+
+    private void ToggleCroqui()
+    {
+        if (fichaViewer is null) return;
+        mostrarCroqui = !mostrarCroqui;
+        if (mostrarCroqui && croquiUrl is null)
+            croquiUrl = BuildCroquiUrl(fichaViewer);
+    }
+
+    private static string BuildCroquiUrl(Models.LayoutDto l)
+    {
+        var tipo  = NomeTipoEn(l.TipoProduto);
+        var cor   = l.Cores;
+        var med   = l.Medidas is not null
+            ? string.Join(", ", l.Medidas.Select(m => m.Key + " " + m.Value))
+            : "";
+        var logo  = NomeLogomarcaEn(l.TipoLogomarca) + " application on " + l.PosicaoLogomarca;
+
+        var prompt = "technical fashion flat sketch, front and back view of " + tipo +
+                     ", " + cor + " color, " + l.Tecido + " fabric" +
+                     ", " + logo +
+                     (med.Length > 0 ? ", measurements: " + med : "") +
+                     ", professional fashion croqui, technical drawing style" +
+                     ", visible seam lines, construction details" +
+                     ", clean white background, black ink lines, fashion illustration";
+        var seed = (l.Id.GetHashCode() + 77777) & 0x7FFFFFFF;
+        return "https://image.pollinations.ai/prompt/" +
+               Uri.EscapeDataString(prompt) +
+               "?width=800&height=550&model=flux&seed=" + seed + "&nologo=true&enhance=true";
     }
 
     private void AprovarFicha()
@@ -568,11 +652,17 @@ else
 
         salvando = true;
         erroForm = "";
-        var (sucesso, _, erro) = await Api.CriarLayoutAsync(novoLayout);
+        var (sucesso, novoDto, erro) = await Api.CriarLayoutAsync(novoLayout);
         if (sucesso)
         {
             FecharDrawer();
             await CarregarLayouts();
+            // Pré-carrega as imagens Pollinations no cache do browser
+            if (novoDto is not null)
+            {
+                var preloadUrls = UrlsAvatar(novoDto).ToArray();
+                await JS.InvokeVoidAsync("PreloadImages.preload", (object)preloadUrls);
+            }
         }
         else erroForm = erro ?? "Erro ao salvar.";
         salvando = false;
