@@ -6,276 +6,311 @@
 
 <PageTitle>Vitrine — Uniformes</PageTitle>
 
-<!-- ══ PÁGINA DE DETALHE ══ -->
-@if (detalhe is not null)
-{
-    <div class="vit-detail-page">
-        <div class="vit-breadcrumb">
-            <span @onclick="FecharDetalhe"><i class="bi bi-grid-3x3-gap-fill"></i> Vitrine</span>
-            <i class="bi bi-chevron-right"></i>
-            <span>@NomeTipo(detalhe.TipoProduto)</span>
-            <i class="bi bi-chevron-right"></i>
-            <strong>@detalhe.Modelo</strong>
-        </div>
+<div class="vit2-layout">
 
-        <div class="vit-detail-layout">
-
-            <!-- ── Coluna esquerda: personagem ── -->
-            <div class="vit-galeria-col">
-                <!-- Botões de vista -->
-                <div class="vit-view-tabs">
-                    @foreach (var (v, lbl) in new[]{("frente","Frente"),("lado","Lado D"),("costas","Costas"),("lado-e","Lado E")})
-                    {
-                        var vv = v; var ll = lbl;
-                        <button class="vit-view-tab @(vistaAtual == vv ? "ativo" : "")"
-                                @onclick="() => { vistaAtual = vv; girando = false; PararTimer(); }">
-                            @ll
-                        </button>
-                    }
-                </div>
-
-                <!-- Personagem SVG -->
-                <div class="vit-char-container">
-                    <Personagem ShirtColor="@shirtHex"
-                                PantsColor="@pantsHex"
-                                ShoesColor="@shoesHex"
-                                LogoColor="@logoHex"
-                                Spinning="@girando"
-                                ViewLabel="@NomeVista(vistaAtual)" />
-
-                    <!-- Overlay "gerando..." aparece somente se não tiver cor ainda -->
-                    @if (string.IsNullOrEmpty(shirtHex))
-                    {
-                        <div class="vit-char-loading">
-                            <div class="vit-spin-icon"></div>
-                        </div>
-                    }
-                </div>
-
-                <!-- Botão 360° -->
-                <button class="vit-btn-360 @(girando ? "ativo" : "")" @onclick="ToggleGiro">
-                    <i class="bi @(girando ? "bi-pause-fill" : "bi-arrow-repeat")"></i>
-                    @(girando ? "Pausar rotação" : "Girar 360°")
-                </button>
+    <!-- ═══════════════ LEFT — Lista de fichas ═══════════════ -->
+    <div class="vit2-left">
+        <div class="vit2-left-header">
+            <div class="vit2-left-title">
+                <i class="bi bi-bag-heart-fill"></i> Fichas
             </div>
-
-            <!-- ── Coluna direita: info ── -->
-            <div class="vit-info-col">
-                <div class="vit-info-tag">@NomeTipo(detalhe.TipoProduto)</div>
-                <h1 class="vit-info-nome">@detalhe.Modelo</h1>
-                <div class="vit-info-sub">
-                    <i class="bi bi-buildings"></i> @detalhe.NomeCliente
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-layers"></i> @detalhe.Tecido
-                </div>
-
-                @if (detalhe.Aprovado)
-                {
-                    <div class="vit-aprovado-badge">
-                        <i class="bi bi-check-circle-fill"></i> FICHA APROVADA
-                    </div>
-                }
-
-                <div class="vit-sep"></div>
-
-                <!-- COR DA CAMISA -->
-                <div class="vit-cor-grupo">
-                    <div class="vit-cor-label">
-                        Cor da camisa
-                        <span class="vit-cor-selected" style="background:@shirtHex">
-                            <span style="color:@CorFg(shirtHex)">@shirtNome</span>
-                        </span>
-                    </div>
-                    <div class="vit-swatches">
-                        @foreach (var cor in CoresDisponiveis(detalhe))
-                        {
-                            var c = cor;
-                            var hex = CorHex(c);
-                            <button class="vit-swatch @(shirtNome == c ? "ativo" : "")"
-                                    style="background:@hex"
-                                    title="@c"
-                                    @onclick="() => { shirtNome = c; shirtHex = CorHex(c); }">
-                                @if (shirtNome == c)
-                                {
-                                    <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
-                                }
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <!-- COR DA CALÇA -->
-                <div class="vit-cor-grupo">
-                    <div class="vit-cor-label">
-                        Cor da calça
-                        <span class="vit-cor-selected" style="background:@pantsHex">
-                            <span style="color:@CorFg(pantsHex)">@pantsNome</span>
-                        </span>
-                    </div>
-                    <div class="vit-swatches">
-                        @foreach (var cor in CoresCalca)
-                        {
-                            var c = cor.Nome; var hex = cor.Hex;
-                            <button class="vit-swatch @(pantsNome == c ? "ativo" : "")"
-                                    style="background:@hex"
-                                    title="@c"
-                                    @onclick="() => { pantsNome = c; pantsHex = hex; }">
-                                @if (pantsNome == c)
-                                {
-                                    <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
-                                }
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <!-- COR DO SAPATO -->
-                <div class="vit-cor-grupo">
-                    <div class="vit-cor-label">
-                        Cor do sapato
-                        <span class="vit-cor-selected" style="background:@shoesHex">
-                            <span style="color:@CorFg(shoesHex)">@shoesNome</span>
-                        </span>
-                    </div>
-                    <div class="vit-swatches">
-                        @foreach (var cor in CoresSapato)
-                        {
-                            var c = cor.Nome; var hex = cor.Hex;
-                            <button class="vit-swatch @(shoesNome == c ? "ativo" : "")"
-                                    style="background:@hex"
-                                    title="@c"
-                                    @onclick="() => { shoesNome = c; shoesHex = hex; }">
-                                @if (shoesNome == c)
-                                {
-                                    <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
-                                }
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <div class="vit-sep"></div>
-
-                <!-- Detalhes técnicos -->
-                <div class="vit-specs">
-                    <div class="vit-spec"><span>Aplicação</span><strong>@NomeLogomarca(detalhe.TipoLogomarca)</strong></div>
-                    <div class="vit-spec"><span>Posição logo</span><strong>@detalhe.PosicaoLogomarca</strong></div>
-                    @if (!string.IsNullOrEmpty(detalhe.TamanhoLogomarca))
+            <div class="vit2-filtros">
+                <input class="input-field vit2-busca"
+                       placeholder="Buscar modelo ou cliente..."
+                       @bind="busca" @bind:event="oninput" />
+                <select class="input-field vit2-sel" @bind="filtroClienteId">
+                    <option value="">Todos os clientes</option>
+                    @foreach (var c in clientes)
                     {
-                        <div class="vit-spec"><span>Tamanho logo</span><strong>@detalhe.TamanhoLogomarca</strong></div>
+                        var nome = string.IsNullOrEmpty(c.NomeFantasia) ? c.RazaoSocial : c.NomeFantasia;
+                        <option value="@c.Id">@nome</option>
                     }
-                    @if (!string.IsNullOrEmpty(detalhe.CorLogomarca))
+                </select>
+                <select class="input-field vit2-sel" @bind="filtroTipo">
+                    <option value="">Todos os tipos</option>
+                    @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
                     {
-                        <div class="vit-spec"><span>Cor logo</span><strong>@detalhe.CorLogomarca</strong></div>
+                        <option value="@((int)tp)">@NomeTipo(tp)</option>
                     }
-                    @if (!string.IsNullOrEmpty(detalhe.Outros))
-                    {
-                        <div class="vit-spec obs"><span>Observações</span><span>@detalhe.Outros</span></div>
-                    }
-                </div>
-
-                <div class="vit-sep"></div>
-
-                <div class="vit-acoes">
-                    <button class="vit-btn-pdf" @onclick="ImprimirProposta">
-                        <i class="bi bi-file-earmark-pdf-fill"></i> Gerar Proposta PDF
-                    </button>
-                </div>
+                </select>
             </div>
         </div>
-    </div>
-}
-else
-{
-    <!-- ══ LISTAGEM ══ -->
-    <div class="page-header">
-        <div>
-            <div class="page-title">Vitrine de Uniformes</div>
-            <div class="page-subtitle">Clique em um produto para vestir no personagem e trocar as cores</div>
-        </div>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-            <input class="input-field" style="width:200px;font-size:.85rem"
-                   placeholder="Buscar..." @bind="busca" @bind:event="oninput" />
-            <select class="input-field" style="width:150px;font-size:.85rem;appearance:auto"
-                    @bind="filtroTipo">
-                <option value="">Todos os tipos</option>
-                @foreach (var tp in Enum.GetValues<Models.TipoProduto>())
-                {
-                    <option value="@((int)tp)">@NomeTipo(tp)</option>
-                }
-            </select>
-        </div>
-    </div>
 
-    @if (carregando)
-    {
-        <div class="vit-skeleton-grid">
-            @for (var i = 0; i < 8; i++)
+        <div class="vit2-lista">
+            @if (carregando)
             {
-                <div class="vit-skeleton-card">
-                    <div class="vit-sk-img"></div>
-                    <div class="vit-sk-line"></div>
-                    <div class="vit-sk-line short"></div>
-                    <div class="vit-sk-cores"></div>
+                @for (var i = 0; i < 6; i++)
+                {
+                    <div class="vit2-item-sk">
+                        <div class="vit2-sk-line"></div>
+                        <div class="vit2-sk-line short"></div>
+                    </div>
+                }
+            }
+            else if (!ProdutosFiltrados().Any())
+            {
+                <div class="vit2-lista-empty">
+                    <i class="bi bi-bag-x"></i>
+                    <p>Nenhuma ficha encontrada</p>
+                    <a href="/layouts">Cadastrar fichas</a>
                 </div>
             }
-        </div>
-    }
-    else if (!ProdutosFiltrados().Any())
-    {
-        <div class="card-modern">
-            <div class="empty-state">
-                <i class="bi bi-bag-x"></i>
-                <p>Nenhum produto encontrado.</p>
-                <a href="/layouts" class="btn-primary-modern mt-3">
-                    <i class="bi bi-plus-lg"></i> Cadastrar fichas
-                </a>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="vit-grid">
-            @foreach (var p in ProdutosFiltrados())
+            else
             {
-                var primeirasCores = CoresDisponiveis(p);
-                var corCard = primeirasCores.FirstOrDefault() ?? "";
-                <div class="vit-card" @onclick="() => AbrirDetalhe(p)">
-                    <!-- Preview SVG miniatura -->
-                    <div class="vit-card-img">
-                        <div class="vit-card-svg-wrap"
-                             style="--shirt:@CorHex(corCard);--pants:#1E3A5F;--shoes:#2D2D2D;--logo:#fff">
-                            <Personagem ShirtColor="@CorHex(corCard)"
-                                        PantsColor="#1E3A5F"
-                                        ShoesColor="#2D2D2D"
-                                        LogoColor="#FFFFFF" />
-                        </div>
-                        <div class="vit-card-overlay">
-                            <i class="bi bi-eye-fill"></i> Experimentar
-                        </div>
-                        @if (p.Aprovado)
-                        {
-                            <div class="vit-badge-card">
-                                <i class="bi bi-check-circle-fill"></i> Aprovado
-                            </div>
-                        }
-                    </div>
-                    <div class="vit-card-body">
-                        <div class="vit-card-tipo">@NomeTipo(p.TipoProduto)</div>
-                        <div class="vit-card-nome">@p.Modelo</div>
-                        <div class="vit-card-cliente">@p.NomeCliente</div>
-                        <div class="vit-card-swatches">
-                            @foreach (var c in primeirasCores.Take(6))
+                @foreach (var p in ProdutosFiltrados())
+                {
+                    var pp = p;
+                    var isAtivo = detalhe?.Id == pp.Id;
+                    var isAprov = pp.Aprovado || aprovados.Contains(pp.Id);
+                    <div class="vit2-item @(isAtivo ? "ativo" : "") @(isAprov ? "aprovado" : "")"
+                         @onclick="() => SelecionarFicha(pp)">
+                        <div class="vit2-item-top">
+                            <span class="vit2-tipo-badge">@NomeTipo(pp.TipoProduto)</span>
+                            @if (isAprov)
                             {
-                                <span class="vit-mini-swatch" style="background:@CorHex(c)" title="@c"></span>
+                                <i class="bi bi-check-circle-fill vit2-badge-ok"></i>
+                            }
+                        </div>
+                        <div class="vit2-item-nome">@pp.Modelo</div>
+                        <div class="vit2-item-cli">@pp.NomeCliente</div>
+                        <div class="vit2-item-cores">
+                            @foreach (var c in CoresDisponiveis(pp).Take(6))
+                            {
+                                <span class="vit2-mini-dot" style="background:@CorHex(c)" title="@c"></span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- ═══════════════ RIGHT — Provador ═══════════════ -->
+    <div class="vit2-provador">
+        @if (detalhe is null)
+        {
+            <div class="vit2-empty">
+                <i class="bi bi-bag-heart-fill"></i>
+                <p>Selecione uma ficha ao lado<br>para experimentar no personagem</p>
+            </div>
+        }
+        else
+        {
+            <div class="vit2-prov-inner">
+
+                <!-- ── Cabeçalho da ficha ── -->
+                <div class="vit2-prov-header">
+                    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                        <span class="vit2-tipo-badge lg">@NomeTipo(detalhe.TipoProduto)</span>
+                        <span class="vit2-prov-nome">@detalhe.Modelo</span>
+                    </div>
+                    <span class="vit2-prov-cli">
+                        <i class="bi bi-buildings"></i> @detalhe.NomeCliente
+                    </span>
+                </div>
+
+                <!-- ── Stage: personagem + controles ── -->
+                <div class="vit2-stage">
+                    <div class="vit2-stage-top">
+
+                        <!-- Gênero M/F -->
+                        <div class="vit2-gen-toggle">
+                            <button class="@(!feminino ? "ativo" : "")" @onclick="() => feminino = false" title="Masculino">
+                                <i class="bi bi-gender-male"></i>
+                            </button>
+                            <button class="@(feminino ? "ativo" : "")" @onclick="() => feminino = true" title="Feminino">
+                                <i class="bi bi-gender-female"></i>
+                            </button>
+                        </div>
+
+                        <!-- Tamanho -->
+                        <div class="vit2-sizes">
+                            @foreach (var (tam, sc) in Tamanhos)
+                            {
+                                var t = tam; var s = sc;
+                                <button class="vit2-size-btn @(tamanhoAtual == t ? "ativo" : "")"
+                                        @onclick="() => { tamanhoAtual = t; tamScale = s; }">@t</button>
+                            }
+                        </div>
+
+                        <!-- 360° -->
+                        <button class="vit2-btn-360 @(girando ? "ativo" : "")" @onclick="ToggleGiro"
+                                title="@(girando ? "Pausar rotação" : "Girar 360°")">
+                            <i class="bi @(girando ? "bi-pause-fill" : "bi-arrow-repeat")"></i>
+                        </button>
+                    </div>
+
+                    <!-- Personagem SVG -->
+                    <div class="vit2-char-wrap"
+                         style="transform:scale(@tamScale.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));transform-origin:bottom center;transition:transform .25s">
+                        <Personagem ShirtColor="@shirtHex"
+                                    ShirtColor2="@shirt2Hex"
+                                    PantsColor="@pantsHex"
+                                    ShoesColor="@shoesHex"
+                                    LogoColor="@logoHex"
+                                    Feminino="@feminino"
+                                    Girando="@girando"
+                                    Tipo="@detalhe.TipoProduto" />
+                    </div>
+
+                    <div class="vit2-stage-label">@tamanhoAtual — @(feminino ? "Feminino" : "Masculino")</div>
+                </div>
+
+                <!-- ── Seletores de cor ── -->
+                <div class="vit2-cores-panel">
+
+                    <!-- Cor principal da peça (cores cadastradas na ficha) -->
+                    <div class="vit2-cor-grupo">
+                        <div class="vit2-cor-label">
+                            @NomePeca(detalhe.TipoProduto)
+                            <span class="vit2-cor-chip" style="background:@CorPrincipalHex;color:@CorFg(CorPrincipalHex)">
+                                @corPrincipalNome
+                            </span>
+                        </div>
+                        <div class="vit2-swatches">
+                            @foreach (var cor in CoresDisponiveis(detalhe))
+                            {
+                                var c = cor; var hex = CorHex(c);
+                                <button class="vit2-swatch @(corPrincipalNome == c ? "ativo" : "")"
+                                        style="background:@hex" title="@c"
+                                        @onclick="() => SetCorPrincipal(c)">
+                                    @if (corPrincipalNome == c)
+                                    {
+                                        <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
+                                    }
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Cor acento/faixa (agasalho) -->
+                    @if (detalhe.TipoProduto == Models.TipoProduto.Agasalho)
+                    {
+                        <div class="vit2-cor-grupo">
+                            <div class="vit2-cor-label">
+                                Detalhe/Faixa
+                                <span class="vit2-cor-chip" style="background:@shirt2Hex;color:@CorFg(shirt2Hex)">
+                                    @shirt2Nome
+                                </span>
+                            </div>
+                            <div class="vit2-swatches">
+                                @foreach (var cor in CoresCalca)
+                                {
+                                    var c = cor.Nome; var hex = cor.Hex;
+                                    <button class="vit2-swatch @(shirt2Nome == c ? "ativo" : "")"
+                                            style="background:@hex" title="@c"
+                                            @onclick="() => { shirt2Nome = c; shirt2Hex = hex; }">
+                                        @if (shirt2Nome == c)
+                                        {
+                                            <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Calça — só para peças do tipo top (polo/malha/jaleco/agasalho/colete) -->
+                    @if (MostraCalca)
+                    {
+                        <div class="vit2-cor-grupo">
+                            <div class="vit2-cor-label">
+                                Calça
+                                <span class="vit2-cor-chip" style="background:@pantsHex;color:@CorFg(pantsHex)">
+                                    @pantsNome
+                                </span>
+                            </div>
+                            <div class="vit2-swatches">
+                                @foreach (var cor in CoresCalca)
+                                {
+                                    var c = cor.Nome; var hex = cor.Hex;
+                                    <button class="vit2-swatch @(pantsNome == c ? "ativo" : "")"
+                                            style="background:@hex" title="@c"
+                                            @onclick="() => { pantsNome = c; pantsHex = hex; }">
+                                        @if (pantsNome == c)
+                                        {
+                                            <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Calçado -->
+                    <div class="vit2-cor-grupo">
+                        <div class="vit2-cor-label">
+                            Calçado
+                            <span class="vit2-cor-chip" style="background:@shoesHex;color:@CorFg(shoesHex)">
+                                @shoesNome
+                            </span>
+                        </div>
+                        <div class="vit2-swatches">
+                            @foreach (var cor in CoresSapato)
+                            {
+                                var c = cor.Nome; var hex = cor.Hex;
+                                <button class="vit2-swatch @(shoesNome == c ? "ativo" : "")"
+                                        style="background:@hex" title="@c"
+                                        @onclick="() => { shoesNome = c; shoesHex = hex; }">
+                                    @if (shoesNome == c)
+                                    {
+                                        <i class="bi bi-check-lg" style="color:@CorFg(hex)"></i>
+                                    }
+                                </button>
                             }
                         </div>
                     </div>
                 </div>
-            }
-        </div>
-    }
-}
+
+                <!-- ── Ficha técnica ── -->
+                <div class="vit2-ficha">
+                    <div class="vit2-ficha-title">
+                        <i class="bi bi-clipboard2-data"></i> Ficha Técnica
+                    </div>
+                    <div class="vit2-ficha-grid">
+                        <div class="vit2-spec"><span>Tecido</span><strong>@detalhe.Tecido</strong></div>
+                        <div class="vit2-spec"><span>Aplicação</span><strong>@NomeLogomarca(detalhe.TipoLogomarca)</strong></div>
+                        @if (!string.IsNullOrEmpty(detalhe.PosicaoLogomarca))
+                        {
+                            <div class="vit2-spec"><span>Posição logo</span><strong>@detalhe.PosicaoLogomarca</strong></div>
+                        }
+                        @if (!string.IsNullOrEmpty(detalhe.TamanhoLogomarca))
+                        {
+                            <div class="vit2-spec"><span>Tamanho logo</span><strong>@detalhe.TamanhoLogomarca</strong></div>
+                        }
+                        @if (!string.IsNullOrEmpty(detalhe.CorLogomarca))
+                        {
+                            <div class="vit2-spec"><span>Cor logo</span><strong>@detalhe.CorLogomarca</strong></div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(detalhe.Outros))
+                        {
+                            <div class="vit2-spec full"><span>Observações</span><span>@detalhe.Outros</span></div>
+                        }
+                    </div>
+                </div>
+
+                <!-- ── Ações ── -->
+                <div class="vit2-acoes">
+                    @if (detalhe.Aprovado || aprovados.Contains(detalhe.Id))
+                    {
+                        <div class="vit2-aprovado-ok">
+                            <i class="bi bi-check-circle-fill"></i> Ficha Aprovada!
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn-primary-modern vit2-btn-aprovar" @onclick="AprovarFicha">
+                            <i class="bi bi-check-circle"></i> Aprovar Ficha
+                        </button>
+                    }
+                    <button class="vit2-btn-print" @onclick="ImprimirProposta">
+                        <i class="bi bi-printer-fill"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
 
 <!-- PRINT -->
 @if (detalhe is not null)
@@ -287,23 +322,23 @@ else
             <div class="proposta-data">@DateTime.Now.ToString("dd/MM/yyyy")</div>
         </div>
         <div class="proposta-body">
-            <div class="proposta-avatar-img" style="width:200px;height:300px">
-                <Personagem ShirtColor="@shirtHex" PantsColor="@pantsHex"
-                            ShoesColor="@shoesHex" LogoColor="@logoHex" />
+            <div style="width:180px;height:270px">
+                <Personagem ShirtColor="@shirtHex" ShirtColor2="@shirt2Hex"
+                            PantsColor="@pantsHex" ShoesColor="@shoesHex"
+                            LogoColor="@logoHex" Feminino="@feminino"
+                            Tipo="@detalhe.TipoProduto" />
             </div>
             <div class="proposta-detalhes">
                 <h2>@detalhe.Modelo</h2>
                 <p><b>Cliente:</b> @detalhe.NomeCliente</p>
                 <p><b>Tipo:</b> @NomeTipo(detalhe.TipoProduto)</p>
                 <p><b>Tecido:</b> @detalhe.Tecido</p>
-                <p><b>Camisa:</b> @shirtNome</p>
-                <p><b>Calça:</b> @pantsNome</p>
-                <p><b>Sapato:</b> @shoesNome</p>
+                <p><b>Cor da peça:</b> @corPrincipalNome</p>
+                @if (MostraCalca) { <p><b>Calça:</b> @pantsNome</p> }
+                <p><b>Calçado:</b> @shoesNome</p>
                 <p><b>Logomarca:</b> @NomeLogomarca(detalhe.TipoLogomarca) — @detalhe.PosicaoLogomarca</p>
-                @if (!string.IsNullOrWhiteSpace(detalhe.Outros))
-                {
-                    <p><b>Obs:</b> @detalhe.Outros</p>
-                }
+                <p><b>Tamanho:</b> @tamanhoAtual</p>
+                @if (!string.IsNullOrWhiteSpace(detalhe.Outros)) { <p><b>Obs:</b> @detalhe.Outros</p> }
             </div>
         </div>
         <div class="proposta-footer">Roupa Solution — Gestão Têxtil Profissional</div>
@@ -311,17 +346,17 @@ else
 }
 
 @code {
-    // ── Paletas fixas ─────────────────────────────────────
+    // ── Paletas fixas ──────────────────────────────────────
     record CorOpc(string Nome, string Hex);
 
     static readonly CorOpc[] CoresCalca =
     [
-        new("Azul Marinho",  "#1E3A5F"),
-        new("Preto",         "#111111"),
-        new("Cinza",         "#6B7280"),
-        new("Cáqui",         "#C5A55A"),
-        new("Marrom",        "#92400E"),
-        new("Branco",        "#F5F5F5"),
+        new("Azul Marinho", "#1E3A5F"),
+        new("Preto",        "#111111"),
+        new("Cinza",        "#6B7280"),
+        new("Cáqui",        "#C5A55A"),
+        new("Marrom",       "#92400E"),
+        new("Branco",       "#F5F5F5"),
     ];
 
     static readonly CorOpc[] CoresSapato =
@@ -333,29 +368,52 @@ else
         new("Caramelo", "#C87941"),
     ];
 
+    static readonly (string Tam, double Scale)[] Tamanhos =
+    [
+        ("PP", 0.78), ("P", 0.87), ("M", 1.0), ("G", 1.10), ("GG", 1.18), ("EG", 1.25), ("EGG", 1.32)
+    ];
+
     // ── Estado ────────────────────────────────────────────
-    List<Models.LayoutDto> produtos  = [];
-    Models.LayoutDto?      detalhe;
+    List<Models.LayoutDto>  produtos   = [];
+    List<Models.ClienteDto> clientes   = [];
+    Models.LayoutDto?       detalhe;
+    HashSet<Guid>           aprovados  = [];
     bool  carregando = true;
-    string busca      = "";
-    string filtroTipo = "";
 
-    // Cores selecionadas
-    string shirtNome = ""; string shirtHex = "#DC2626";
-    string pantsNome = "Azul Marinho"; string pantsHex = "#1E3A5F";
-    string shoesNome = "Preto";        string shoesHex = "#1A1A1A";
-    string logoHex   = "#FFFFFF";
+    // Filtros
+    string busca           = "";
+    string filtroClienteId = "";
+    string filtroTipo      = "";
 
-    // Vista e rotação
-    string vistaAtual = "frente";
-    bool   girando    = false;
+    // Personagem
+    bool   feminino     = false;
+    bool   girando      = false;
+    string tamanhoAtual = "M";
+    double tamScale     = 1.0;
+
+    // Cores
+    string corPrincipalNome = "";
+    string shirtHex  = "#DC2626";
+    string shirt2Nome = "Preto";  string shirt2Hex = "#111111";
+    string pantsNome  = "Azul Marinho"; string pantsHex = "#1E3A5F";
+    string shoesNome  = "Preto";        string shoesHex = "#1A1A1A";
+    string logoHex    = "#FFFFFF";
+
     System.Threading.Timer? _timer;
-    static readonly string[] VistasCiclo = ["frente", "lado", "costas", "lado-e"];
+
+    // ── Computed ──────────────────────────────────────────
+    bool EhPecaBottom    => detalhe?.TipoProduto is Models.TipoProduto.Bermuda or Models.TipoProduto.Calca;
+    bool MostraCalca     => detalhe is not null && !EhPecaBottom;
+    string CorPrincipalHex => EhPecaBottom ? pantsHex : shirtHex;
 
     // ── Init ──────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
-        produtos   = await Api.ListarLayoutsAsync();
+        var t1 = Api.ListarLayoutsAsync();
+        var t2 = Api.ListarClientesAsync();
+        await Task.WhenAll(t1, t2);
+        produtos   = t1.Result;
+        clientes   = t2.Result;
         carregando = false;
     }
 
@@ -368,28 +426,33 @@ else
         if (!string.IsNullOrWhiteSpace(busca))
             q = q.Where(p => p.Modelo.Contains(busca, StringComparison.OrdinalIgnoreCase)
                           || p.NomeCliente.Contains(busca, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(filtroClienteId) && Guid.TryParse(filtroClienteId, out var cid))
+            q = q.Where(p => p.ClienteId == cid);
         if (!string.IsNullOrWhiteSpace(filtroTipo) && int.TryParse(filtroTipo, out var tp))
             q = q.Where(p => (int)p.TipoProduto == tp);
         return q;
     }
 
-    // ── Detalhe ───────────────────────────────────────────
-    void AbrirDetalhe(Models.LayoutDto p)
+    // ── Seleção de ficha ──────────────────────────────────
+    void SelecionarFicha(Models.LayoutDto p)
     {
-        detalhe    = p;
-        vistaAtual = "frente";
-        girando    = false;
+        PararTimer();
+        girando      = false;
+        detalhe      = p;
+        tamanhoAtual = "M";
+        tamScale     = 1.0;
+
         var cores = CoresDisponiveis(p);
-        shirtNome  = cores.FirstOrDefault() ?? "";
-        shirtHex   = CorHex(shirtNome);
-        pantsNome  = "Azul Marinho"; pantsHex = "#1E3A5F";
-        shoesNome  = "Preto";        shoesHex = "#1A1A1A";
+        corPrincipalNome = cores.FirstOrDefault() ?? "";
+        SetCorPrincipal(corPrincipalNome);
+
+        shirt2Nome = "Preto";        shirt2Hex = "#111111";
+        pantsNome  = "Azul Marinho"; pantsHex  = "#1E3A5F";
+        shoesNome  = "Preto";        shoesHex  = "#1A1A1A";
         logoHex    = "#FFFFFF";
     }
 
-    void FecharDetalhe() { PararTimer(); girando = false; detalhe = null; }
-
-    // ── Rotação 360° ─────────────────────────────────────
+    // ── Rotação 360° ──────────────────────────────────────
     void ToggleGiro()
     {
         girando = !girando;
@@ -398,28 +461,35 @@ else
             _timer = new System.Threading.Timer(async _ =>
             {
                 if (!girando) return;
-                var idx  = Array.IndexOf(VistasCiclo, vistaAtual);
-                vistaAtual = VistasCiclo[(idx + 1) % VistasCiclo.Length];
                 await InvokeAsync(StateHasChanged);
-            }, null, 900, 900);
+            }, null, 800, 800);
         }
         else PararTimer();
     }
 
     void PararTimer() { _timer?.Dispose(); _timer = null; }
 
-    string NomeVista(string v) => v switch
+    // ── Aprovar ───────────────────────────────────────────
+    void AprovarFicha()
     {
-        "frente" => "Frente",
-        "lado"   => "Lado direito",
-        "costas" => "Costas",
-        "lado-e" => "Lado esquerdo",
-        _        => v
-    };
+        if (detalhe is null) return;
+        aprovados.Add(detalhe.Id);
+        var idx = produtos.FindIndex(l => l.Id == detalhe.Id);
+        if (idx >= 0) { produtos[idx] = produtos[idx] with { Aprovado = true }; detalhe = produtos[idx]; }
+    }
 
     async Task ImprimirProposta() => await JS.InvokeVoidAsync("window.print");
 
-    // ── Helpers ───────────────────────────────────────────
+    // ── Cor principal ─────────────────────────────────────
+    void SetCorPrincipal(string cor)
+    {
+        corPrincipalNome = cor;
+        var hex = CorHex(cor);
+        if (EhPecaBottom) pantsHex  = hex;
+        else              shirtHex  = hex;
+    }
+
+    // ── Helpers estáticos ─────────────────────────────────
     static List<string> CoresDisponiveis(Models.LayoutDto p) =>
         p.Cores.Split([" e ", " & ", ",", "/"], StringSplitOptions.RemoveEmptyEntries)
                .Select(c => c.Trim()).Where(c => !string.IsNullOrEmpty(c))
@@ -458,14 +528,25 @@ else
 
     static string NomeTipo(Models.TipoProduto t) => t switch
     {
-        Models.TipoProduto.CamisaPolo  => "Camisa Polo",
-        Models.TipoProduto.CamisaMalha => "Camiseta Malha",
+        Models.TipoProduto.CamisaPolo  => "Polo",
+        Models.TipoProduto.CamisaMalha => "Malha",
         Models.TipoProduto.Jaleco      => "Jaleco",
         Models.TipoProduto.Calca       => "Calça",
         Models.TipoProduto.Bermuda     => "Bermuda",
         Models.TipoProduto.Agasalho    => "Agasalho",
         Models.TipoProduto.Colete      => "Colete",
         _ => t.ToString()
+    };
+
+    static string NomePeca(Models.TipoProduto t) => t switch
+    {
+        Models.TipoProduto.Bermuda     => "Cor da Bermuda",
+        Models.TipoProduto.Calca       => "Cor da Calça",
+        Models.TipoProduto.CamisaMalha => "Cor da Camiseta",
+        Models.TipoProduto.Jaleco      => "Cor do Jaleco",
+        Models.TipoProduto.Agasalho    => "Cor do Agasalho",
+        Models.TipoProduto.Colete      => "Cor do Colete",
+        _ => "Cor da Peça"
     };
 
     static string NomeLogomarca(Models.TipoLogomarca t) => t switch

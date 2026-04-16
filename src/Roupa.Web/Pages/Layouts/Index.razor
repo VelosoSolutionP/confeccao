@@ -216,207 +216,6 @@
 }
 
 <!-- ═══════════════════════════════════════════
-     VIEWER 360°
-═══════════════════════════════════════════ -->
-@if (fichaViewer is not null)
-{
-    <div class="drawer-overlay" @onclick="FecharViewer"></div>
-    <div class="viewer-modal">
-        <div class="viewer-header">
-            <div>
-                <div style="font-weight:700;font-size:1.1rem">@fichaViewer.Modelo</div>
-                <div style="font-size:.8rem;color:var(--surface-400)">@fichaViewer.NomeCliente</div>
-            </div>
-            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-                <!-- Botão Croqui Técnico -->
-                <button class="btn-croqui @(mostrarCroqui ? "ativo" : "")"
-                        @onclick="ToggleCroqui"
-                        title="Croqui técnico da peça gerado por IA">
-                    <i class="bi bi-pencil-square"></i>
-                    <span>Croqui</span>
-                </button>
-                <!-- Botão OutfitAnyone -->
-                <button class="btn-outfit @(gerandoTryOn ? "loading" : "")"
-                        @onclick="GerarTryOn" disabled="@gerandoTryOn" title="Gerar avatar com OutfitAnyone (virtual try-on)">
-                    @if (gerandoTryOn)
-                    {
-                        <span class="spinner-border spinner-border-sm"></span>
-                        <span>Gerando...</span>
-                    }
-                    else if (tryOnOk)
-                    {
-                        <i class="bi bi-stars"></i>
-                        <span>Try-On Ativo</span>
-                    }
-                    else
-                    {
-                        <i class="bi bi-magic"></i>
-                        <span>OutfitAnyone</span>
-                    }
-                </button>
-                @if (erroTryOn is not null)
-                {
-                    <span style="font-size:.72rem;color:var(--danger)">
-                        <i class="bi bi-exclamation-circle"></i> @erroTryOn
-                    </span>
-                }
-                @if (fichaViewer.Aprovado)
-                {
-                    <span class="badge-modern success"><i class="bi bi-check-circle-fill"></i> APROVADO</span>
-                }
-                else
-                {
-                    <button class="btn-primary-modern" style="font-size:.8rem" @onclick="AprovarFicha">
-                        <i class="bi bi-check-lg"></i> Aprovar Ficha
-                    </button>
-                }
-                <button class="drawer-close" @onclick="FecharViewer"><i class="bi bi-x-lg"></i></button>
-            </div>
-        </div>
-
-        @if (fichaViewer.Aprovado)
-        {
-            <div class="aviso-aprovado">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                FICHA APROVADA — NÃO ALTERAR MEDIDAS, TECIDO OU MATERIAL.
-                Qualquer mudança impacta diretamente no resultado final e gera retrabalho.
-                Para alterações, crie uma nova ficha revisada.
-            </div>
-        }
-
-        <div class="viewer-body">
-            <!-- AVATAR 360 -->
-            <div class="avatar-stage">
-                @if (gerandoTryOn)
-                {
-                    <div class="tryon-loading">
-                        <div class="tryon-spinner"></div>
-                        <div class="tryon-label">
-                            <strong>OutfitAnyone</strong><br />
-                            <span>Gerando virtual try-on...</span><br />
-                            <span style="font-size:.7rem;opacity:.7">pode levar 20-40s na primeira vez</span>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="avatar-hint">
-                        @if (tryOnOk)
-                        {
-                            <i class="bi bi-stars" style="color:#f59e0b"></i>
-                            <span style="color:#d97706;font-weight:600">OutfitAnyone</span>
-                        }
-                        else
-                        {
-                            <i class="bi bi-arrow-left-right"></i>
-                            <span>Arraste para girar</span>
-                        }
-                    </div>
-                }
-                <div class="avatar-360" id="av360_@fichaViewer.Id" style="@(gerandoTryOn ? "opacity:.3;pointer-events:none" : "")">
-                    @foreach (var (url, i) in UrlsAvatar(fichaViewer).Select((u,i)=>(u,i)))
-                    {
-                        <img class="av-frame" src="@url" alt="Vista @(i*90)°"
-                             style="opacity:@(i==0?"1":"0");transition:opacity .12s,transform .12s"
-                             onerror="this.src='/img/placeholder.svg'" />
-                    }
-                    <div class="avatar-compass">
-                        @foreach (var (label, deg) in new[]{("F",0),("D",90),("C",180),("E",270)})
-                        {
-                            <span class="compass-pt" style="transform:rotate(@(deg)deg) translateY(-54px) rotate(-@(deg)deg)">@label</span>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUMÁRIO DA FICHA -->
-            <div class="ficha-summary">
-                <div class="summary-title">
-                    <i class="bi bi-file-earmark-text"></i> Ficha Técnica
-                    <span class="summary-version">v@fichaViewer.Versao</span>
-                </div>
-
-                <div class="summary-section">
-                    <div class="summary-row"><span>Produto</span><strong>@NomeTipo(fichaViewer.TipoProduto)</strong></div>
-                    <div class="summary-row"><span>Tecido</span><strong>@fichaViewer.Tecido</strong></div>
-                    <div class="summary-row"><span>Cores</span><strong>@fichaViewer.Cores</strong></div>
-                    <div class="summary-row"><span>Aplicação</span><strong>@NomeLogomarca(fichaViewer.TipoLogomarca)</strong></div>
-                    <div class="summary-row"><span>Posição</span><strong>@fichaViewer.PosicaoLogomarca</strong></div>
-                    @if (!string.IsNullOrEmpty(fichaViewer.TamanhoLogomarca))
-                    {
-                        <div class="summary-row"><span>Tam. logo</span><strong>@fichaViewer.TamanhoLogomarca</strong></div>
-                    }
-                </div>
-
-                @if (fichaViewer.Medidas?.Any() == true)
-                {
-                    <div class="summary-section">
-                        <div class="summary-label">Medidas de Grade</div>
-                        @foreach (var m in fichaViewer.Medidas)
-                        {
-                            <div class="summary-row"><span>@m.Key</span><strong>@m.Value</strong></div>
-                        }
-                    </div>
-                }
-
-                @if (!string.IsNullOrEmpty(fichaViewer.Outros))
-                {
-                    <div class="summary-section">
-                        <div class="summary-label">Observações</div>
-                        <p style="font-size:.82rem;color:var(--surface-700);line-height:1.5">@fichaViewer.Outros</p>
-                    </div>
-                }
-
-                <div class="summary-section" style="font-size:.75rem;color:var(--surface-400)">
-                    Criado em @fichaViewer.CriadoEm.ToString("dd/MM/yyyy HH:mm")
-                </div>
-            </div>
-        </div>
-
-        <!-- CROQUI TÉCNICO -->
-        @if (mostrarCroqui)
-        {
-            <div class="croqui-panel">
-                <div class="croqui-header">
-                    <i class="bi bi-pencil-square"></i>
-                    Croqui Técnico — @fichaViewer.Modelo
-                    <span style="font-size:.72rem;color:var(--surface-400);font-weight:400">
-                        gerado por IA • clique na imagem para ampliar
-                    </span>
-                </div>
-                <div class="croqui-body">
-                    <div class="croqui-img-wrap">
-                        <a href="@croquiUrl" target="_blank" title="Clique para ampliar">
-                            <img src="@croquiUrl"
-                                 alt="Croqui técnico @fichaViewer.Modelo"
-                                 onerror="this.src='/img/placeholder.svg'" />
-                        </a>
-                    </div>
-                    <div class="croqui-info">
-                        <p><b>Produto:</b> @NomeTipo(fichaViewer.TipoProduto)</p>
-                        <p><b>Tecido:</b> @fichaViewer.Tecido</p>
-                        <p><b>Cores:</b> @fichaViewer.Cores</p>
-                        <p><b>Aplicação:</b> @NomeLogomarca(fichaViewer.TipoLogomarca) — @fichaViewer.PosicaoLogomarca</p>
-                        @if (fichaViewer.Medidas?.Any() == true)
-                        {
-                            <p style="margin-top:.5rem"><b>Medidas:</b></p>
-                            @foreach (var m in fichaViewer.Medidas)
-                            {
-                                <p style="margin-left:.5rem;font-size:.8rem">@m.Key: @m.Value</p>
-                            }
-                        }
-                        <a href="@croquiUrl" target="_blank" download="@($"croqui_{fichaViewer.Modelo}.jpg")"
-                           class="btn-primary-modern" style="margin-top:1rem;font-size:.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem">
-                            <i class="bi bi-download"></i> Baixar Croqui
-                        </a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-}
-
-<!-- ═══════════════════════════════════════════
      GALERIA
 ═══════════════════════════════════════════ -->
 @if (carregando)
@@ -440,7 +239,7 @@ else
     <div class="gallery-grid">
         @foreach (var l in layouts)
         {
-            <div class="gallery-card @(l.Aprovado ? "aprovado" : "")" @onclick="() => AbrirViewer(l)">
+            <div class="gallery-card @(l.Aprovado ? "aprovado" : "")">
                 <div class="gallery-avatar">
                     <img src="@UrlAvatarFrent(l)" alt="@l.Modelo"
                          loading="lazy" onerror="this.src='/img/placeholder.svg'" />
@@ -450,11 +249,7 @@ else
                             <i class="bi bi-check-circle-fill"></i> Aprovado
                         </div>
                     }
-                    <div class="gallery-overlay">
-                        <i class="bi bi-eye-fill"></i> Ver ficha
-                    </div>
                     <button class="gallery-del-btn" title="Excluir ficha"
-                            @onclick:stopPropagation="true"
                             @onclick="() => confirmExcluir = l">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -502,7 +297,6 @@ else
     private List<Models.LayoutDto>  layouts    = [];
     private List<Models.ClienteDto> clientes   = [];
     private Models.CriarLayoutModel novoLayout = new();
-    private Models.LayoutDto?       fichaViewer;
     private HashSet<string>         invalidos  = [];
     private HashSet<string>         coresSel   = [];
     private Dictionary<string, string> medidas = [];
@@ -511,16 +305,6 @@ else
 
     // Exclusão
     private Models.LayoutDto? confirmExcluir;
-
-    // OutfitAnyone try-on state
-    private bool   gerandoTryOn;
-    private bool   tryOnOk;
-    private string? erroTryOn;
-    private Dictionary<Guid, string[]> tryOnCache = [];  // cache por ficha
-
-    // Croqui técnico state
-    private bool   mostrarCroqui;
-    private string? croquiUrl;
 
     private static readonly string[] tamanhos = ["PP","P","M","G","GG","EG","EGG","Personalizado"];
 
@@ -560,76 +344,6 @@ else
 
     private void FecharDrawer() { mostrarDrawer = false; erroForm = ""; invalidos.Clear(); }
 
-    private async Task AbrirViewer(Models.LayoutDto l)
-    {
-        var med = ParseMedidasDeOutros(l.Outros);
-        fichaViewer = l with { Medidas = med.Count > 0 ? med : null, Versao = 1 };
-        await Task.Delay(100);
-        await JS.InvokeVoidAsync("Avatar360.init", $"av360_{l.Id}");
-    }
-
-    private static Dictionary<string, string> ParseMedidasDeOutros(string? outros)
-    {
-        var result = new Dictionary<string, string>();
-        if (string.IsNullOrEmpty(outros)) return result;
-        var idx = outros.IndexOf("Grade:");
-        if (idx < 0) return result;
-        var gradeStr = outros[(idx + 6)..].Trim();
-        foreach (var part in gradeStr.Split(','))
-        {
-            var kv = part.Split(':', 2);
-            if (kv.Length == 2 && !string.IsNullOrWhiteSpace(kv[0]))
-                result[kv[0].Trim()] = kv[1].Trim();
-        }
-        return result;
-    }
-
-    private void FecharViewer()
-    {
-        fichaViewer = null;
-        gerandoTryOn = false;
-        erroTryOn = null;
-        mostrarCroqui = false;
-        croquiUrl = null;
-    }
-
-    private void ToggleCroqui()
-    {
-        if (fichaViewer is null) return;
-        mostrarCroqui = !mostrarCroqui;
-        if (mostrarCroqui && croquiUrl is null)
-            croquiUrl = BuildCroquiUrl(fichaViewer);
-    }
-
-    private static string BuildCroquiUrl(Models.LayoutDto l)
-    {
-        var tipo  = NomeTipoEn(l.TipoProduto);
-        var cor   = l.Cores;
-        var med   = l.Medidas is not null
-            ? string.Join(", ", l.Medidas.Select(m => m.Key + " " + m.Value))
-            : "";
-        var logo  = NomeLogomarcaEn(l.TipoLogomarca) + " application on " + l.PosicaoLogomarca;
-
-        var prompt = "technical fashion flat sketch, front and back view of " + tipo +
-                     ", " + cor + " color, " + l.Tecido + " fabric" +
-                     ", " + logo +
-                     (med.Length > 0 ? ", measurements: " + med : "") +
-                     ", professional fashion croqui, technical drawing style" +
-                     ", visible seam lines, construction details" +
-                     ", clean white background, black ink lines, fashion illustration";
-        var seed = (l.Id.GetHashCode() + 77777) & 0x7FFFFFFF;
-        return "https://image.pollinations.ai/prompt/" +
-               Uri.EscapeDataString(prompt) +
-               "?width=800&height=550&model=flux&seed=" + seed + "&nologo=true&enhance=true";
-    }
-
-    private void AprovarFicha()
-    {
-        if (fichaViewer is null) return;
-        fichaViewer = fichaViewer with { Aprovado = true };
-        var idx = layouts.FindIndex(l => l.Id == fichaViewer.Id);
-        if (idx >= 0) layouts[idx] = fichaViewer;
-    }
 
     private async Task SalvarLayout()
     {
@@ -652,17 +366,11 @@ else
 
         salvando = true;
         erroForm = "";
-        var (sucesso, novoDto, erro) = await Api.CriarLayoutAsync(novoLayout);
+        var (sucesso, _, erro) = await Api.CriarLayoutAsync(novoLayout);
         if (sucesso)
         {
             FecharDrawer();
             await CarregarLayouts();
-            // Pré-carrega as imagens Pollinations no cache do browser
-            if (novoDto is not null)
-            {
-                var preloadUrls = UrlsAvatar(novoDto).ToArray();
-                await JS.InvokeVoidAsync("PreloadImages.preload", (object)preloadUrls);
-            }
         }
         else erroForm = erro ?? "Erro ao salvar.";
         salvando = false;
@@ -677,67 +385,8 @@ else
         salvando = false;
     }
 
-    // ── OutfitAnyone virtual try-on ──────────────────────────────
-    private async Task GerarTryOn()
-    {
-        if (fichaViewer is null) return;
-        gerandoTryOn = true;
-        erroTryOn = null;
-        tryOnOk = false;
-        StateHasChanged();
-
-        try
-        {
-            // Usa cache se já gerou para esta ficha
-            if (tryOnCache.TryGetValue(fichaViewer.Id, out var cached))
-            {
-                await JS.InvokeVoidAsync("Avatar360.updateFrames", $"av360_{fichaViewer.Id}", cached);
-                tryOnOk = true;
-            }
-            else
-            {
-                var tipo  = NomeTipoEn(fichaViewer.TipoProduto);
-                var logo  = $"{NomeLogomarcaEn(fichaViewer.TipoLogomarca)} logo on {fichaViewer.PosicaoLogomarca}";
-                var urls  = await JS.InvokeAsync<string[]?>(
-                    "OutfitAnyone.gerar4Vistas", tipo, fichaViewer.Cores, fichaViewer.Tecido, logo);
-
-                if (urls is not null && urls.Length == 4)
-                {
-                    tryOnCache[fichaViewer.Id] = urls;
-                    await JS.InvokeVoidAsync("Avatar360.updateFrames", $"av360_{fichaViewer.Id}", urls);
-                    tryOnOk = true;
-                }
-                else
-                {
-                    erroTryOn = "API indisponível — usando avatar padrão";
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            erroTryOn = "Erro: " + ex.Message[..Math.Min(50, ex.Message.Length)];
-        }
-        finally
-        {
-            gerandoTryOn = false;
-            StateHasChanged();
-            if (tryOnOk)
-                await Task.Delay(150).ContinueWith(_ =>
-                    JS.InvokeVoidAsync("Avatar360.init", $"av360_{fichaViewer?.Id}").AsTask());
-        }
-    }
-
     // ── Geração das URLs de avatar via Pollinations.ai (free, sem API key) ──
     private string UrlAvatarFrent(Models.LayoutDto l) => BuildAvatarUrl(l, "front view");
-
-    private IEnumerable<string> UrlsAvatar(Models.LayoutDto l) =>
-        new[]
-        {
-            BuildAvatarUrl(l, "front view facing camera"),
-            BuildAvatarUrl(l, "right side view 90 degrees"),
-            BuildAvatarUrl(l, "back view"),
-            BuildAvatarUrl(l, "left side view 90 degrees"),
-        };
 
     private static string BuildAvatarUrl(Models.LayoutDto l, string view)
     {
