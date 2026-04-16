@@ -2855,7 +2855,8 @@ code { color: #c02d76; }
 }
 
 /* ── Personagem SVG card (rotação 3D) ── */
-.char-wrapper {
+.char-wrapper,
+.char-wrap {
     width: 100%; height: 100%;
     display: flex; flex-direction: column;
     align-items: center; justify-content: flex-end;
@@ -2863,7 +2864,8 @@ code { color: #c02d76; }
 }
 
 .char-card {
-    width: 75%; flex: 1;
+    width: 100%; flex: 1;
+    min-height: 0;
     position: relative;
     transform-style: preserve-3d;
     transition: none;
@@ -3127,6 +3129,7 @@ code { color: #c02d76; }
     background: linear-gradient(160deg,#f8f9ff 0%,#eef2ff 100%);
     border-radius: 12px; padding: .85rem 1rem;
     border: 1px solid rgba(99,102,241,.12);
+    min-height: 460px;
 }
 
 .vit2-stage-top {
@@ -3175,9 +3178,11 @@ code { color: #c02d76; }
 }
 
 .vit2-char-wrap {
-    width: 130px; height: 280px;
-    display: flex; align-items: flex-end; justify-content: center;
+    /* viewBox 240x520 → aspect ratio 6:13 */
+    width: 168px;
+    height: 364px;
     margin: 0 auto;
+    flex-shrink: 0;
 }
 
 .vit2-stage-label {
