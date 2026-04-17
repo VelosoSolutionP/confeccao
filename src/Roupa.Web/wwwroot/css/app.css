@@ -3430,3 +3430,272 @@ code { color: #c02d76; }
     background: var(--surface-0);
     font-size: .82rem;
 }
+
+/* ═══════════════════════════════════════════════════════
+   VITRINE v3 — layout premium
+═══════════════════════════════════════════════════════ */
+
+/* Shell */
+.vit3-shell {
+    display: flex; flex-direction: column;
+    height: calc(100vh - 56px); /* desconta navbar */
+    overflow: hidden;
+    background: var(--surface-50, #f8fafc);
+}
+
+/* Topbar filtros */
+.vit3-topbar {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: .65rem 1.25rem;
+    background: var(--surface-0, #fff);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.vit3-topbar-brand {
+    font-weight: 800; font-size: .95rem;
+    color: var(--accent, #6366F1);
+    display: flex; align-items: center; gap: .4rem;
+    white-space: nowrap;
+}
+.vit3-topbar-filters { display: flex; gap: .6rem; flex-wrap: wrap; flex: 1; }
+.vit3-filter-wrap {
+    display: flex; align-items: center; gap: .4rem;
+    background: var(--surface-50, #f8fafc);
+    border: 1px solid var(--border-color);
+    border-radius: 8px; padding: .32rem .7rem;
+    min-width: 200px;
+}
+.vit3-filter-wrap i { color: var(--text-secondary); font-size: .85rem; flex-shrink: 0; }
+.vit3-filter-wrap select,
+.vit3-filter-wrap input {
+    border: none; background: transparent; outline: none;
+    font-size: .82rem; color: var(--text-primary); flex: 1; min-width: 0;
+}
+.vit3-busca { min-width: 180px; }
+
+/* Empty state sem empresa */
+.vit3-empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1rem;
+    text-align: center; padding: 2rem;
+}
+.vit3-empty-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: var(--accent, #6366F1);
+}
+.vit3-empty-state h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+.vit3-empty-state p { font-size: .9rem; color: var(--text-secondary); max-width: 360px; margin: 0; line-height: 1.6; }
+.vit3-loading-dots { display: flex; gap: 6px; }
+.vit3-loading-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent, #6366F1); opacity: .4;
+    animation: vit3pulse 1.2s ease-in-out infinite;
+}
+.vit3-loading-dots span:nth-child(2) { animation-delay: .2s; }
+.vit3-loading-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes vit3pulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* Body: lista + ficha */
+.vit3-body { display: flex; flex: 1; overflow: hidden; }
+
+/* Lista lateral */
+.vit3-lista {
+    width: 210px; flex-shrink: 0;
+    overflow-y: auto; padding: .75rem .6rem;
+    border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column; gap: .4rem;
+    background: var(--surface-0, #fff);
+}
+.vit3-card {
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px; padding: .6rem .75rem;
+    cursor: pointer; transition: all .15s;
+    background: var(--surface-0, #fff);
+}
+.vit3-card:hover { border-color: var(--accent, #6366F1); background: rgba(99,102,241,.03); }
+.vit3-card.ativo { border-color: var(--accent, #6366F1); background: rgba(99,102,241,.07); }
+.vit3-card.aprovado .vit3-card-nome { color: #16A34A; }
+.vit3-card-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .25rem; }
+.vit3-badge {
+    font-size: .62rem; font-weight: 700; padding: .1rem .42rem;
+    border-radius: 10px; background: rgba(99,102,241,.12);
+    color: var(--accent, #6366F1); text-transform: uppercase; letter-spacing: .04em;
+}
+.vit3-badge-ok { color: #22C55E; font-size: .8rem; }
+.vit3-card-nome { font-size: .82rem; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+.vit3-card-cores { display: flex; gap: 3px; margin-top: .3rem; flex-wrap: wrap; }
+.vit3-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+.vit3-card-sk {
+    border-radius: 10px; padding: .6rem .75rem;
+    border: 1.5px solid var(--border-color);
+    background: var(--surface-50, #f8fafc);
+}
+.vit3-sk-line { height: 8px; border-radius: 4px; background: rgba(0,0,0,.08); margin-bottom: .3rem; animation: vit3pulse 1.4s ease infinite; }
+.vit3-sk-line.short { width: 60%; }
+.vit3-lista-vazia { text-align: center; padding: 2rem .5rem; color: var(--text-secondary); font-size: .82rem; }
+.vit3-lista-vazia i { display: block; font-size: 1.8rem; opacity: .3; margin-bottom: .5rem; }
+
+/* Área da ficha */
+.vit3-ficha-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.vit3-ficha-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: .6rem;
+    color: var(--text-secondary); font-size: .88rem;
+}
+.vit3-ficha-empty i { font-size: 2rem; opacity: .2; }
+
+/* Header premium da ficha */
+.vit3-fh {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.25rem 1.5rem 1rem;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+    flex-shrink: 0;
+}
+.vit3-fh-tipo {
+    font-size: .65rem; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: .3rem;
+}
+.vit3-fh-modelo {
+    font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0 0 .35rem;
+    line-height: 1.1; letter-spacing: -.02em;
+}
+.vit3-fh-cliente { font-size: .8rem; color: rgba(255,255,255,.7); display: flex; align-items: center; gap: .35rem; }
+.vit3-fh-right { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+.vit3-aprovado-badge {
+    display: flex; align-items: center; gap: .35rem;
+    background: rgba(34,197,94,.2); color: #4ade80;
+    border: 1px solid rgba(74,222,128,.3);
+    border-radius: 20px; padding: .4rem .9rem;
+    font-size: .78rem; font-weight: 700;
+}
+.vit3-btn-aprovar {
+    display: flex; align-items: center; gap: .35rem;
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 20px; padding: .4rem .9rem;
+    font-size: .78rem; font-weight: 700; cursor: pointer;
+    transition: all .15s; backdrop-filter: blur(4px);
+}
+.vit3-btn-aprovar:hover { background: rgba(255,255,255,.25); }
+.vit3-btn-print {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1px solid rgba(255,255,255,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; cursor: pointer; transition: all .15s;
+}
+.vit3-btn-print:hover { background: rgba(255,255,255,.25); }
+
+/* Corpo: manequim + specs */
+.vit3-fc { display: flex; flex: 1; overflow: hidden; }
+
+/* Coluna manequim */
+.vit3-manequim {
+    width: 220px; flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+    background: linear-gradient(180deg, #f0f4ff 0%, #e8edff 100%);
+    display: flex; flex-direction: column; align-items: center;
+    gap: .6rem; padding: 1rem .75rem; overflow-y: auto;
+}
+.vit3-man-controls { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; }
+.vit3-tam-label { font-size: .78rem; color: var(--text-secondary); }
+.vit3-tam-label strong { color: var(--accent, #6366F1); }
+.vit3-char-wrap { width: 160px; height: 346px; flex-shrink: 0; }
+
+.vit3-angles { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+.vit3-ang {
+    padding: .2rem .42rem; border-radius: 6px;
+    border: 1.5px solid var(--border-color); background: white;
+    color: var(--text-secondary); cursor: pointer;
+    font-size: .68rem; font-weight: 700; transition: all .15s;
+    display: flex; align-items: center; gap: .2rem;
+}
+.vit3-ang:hover { border-color: var(--accent,#6366F1); color: var(--accent,#6366F1); }
+.vit3-ang.on { background: var(--accent,#6366F1); color: white; border-color: var(--accent,#6366F1); }
+
+.vit3-cor-section { width: 100%; }
+.vit3-cor-label { font-size: .68rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
+.vit3-swatches { display: flex; flex-wrap: wrap; gap: 4px; }
+.vit3-swatch {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; transition: transform .12s;
+    outline: 2px solid transparent; outline-offset: 1px;
+}
+.vit3-swatch:hover { transform: scale(1.18); }
+.vit3-swatch.on { outline-color: var(--accent,#6366F1); border-color: white; }
+
+/* Coluna specs */
+.vit3-specs {
+    flex: 1; overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+    display: flex; flex-direction: column; gap: 1.25rem;
+}
+.vit3-spec-block {
+    background: var(--surface-0, #fff);
+    border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 1rem 1.15rem;
+}
+.vit3-spec-title {
+    font-size: .72rem; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent, #6366F1);
+    display: flex; align-items: center; gap: .4rem;
+    margin-bottom: .75rem; padding-bottom: .5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.vit3-spec-value { font-size: .92rem; font-weight: 600; color: var(--text-primary); }
+.vit3-spec-value.big { font-size: 1.05rem; }
+.vit3-spec-desc { font-size: .82rem; color: var(--text-secondary); margin-top: .35rem; line-height: 1.5; }
+
+/* Tamanhos grid */
+.vit3-tam-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.vit3-tam {
+    min-width: 52px; padding: .55rem .5rem;
+    border: 2px solid var(--border-color); border-radius: 8px;
+    background: var(--surface-50, #f8fafc); cursor: pointer;
+    text-align: center; transition: all .15s;
+}
+.vit3-tam:hover { border-color: var(--accent,#6366F1); }
+.vit3-tam.on { background: var(--accent,#6366F1); border-color: var(--accent,#6366F1); }
+.vit3-tam.on .vit3-tam-code { color: #fff; }
+.vit3-tam-code { display: block; font-size: .82rem; font-weight: 800; color: var(--text-primary); }
+
+/* Cuidados */
+.vit3-cuidados { display: flex; gap: .85rem; flex-wrap: wrap; }
+.vit3-cuidado { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.vit3-cuidado span { font-size: .63rem; color: var(--text-secondary); text-align: center; max-width: 54px; line-height: 1.3; }
+.vit3-care {
+    width: 40px; height: 40px;
+    border: 2.5px solid var(--border-color);
+    border-radius: 6px; background: var(--surface-50, #f8fafc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800; color: var(--text-primary);
+}
+.vit3-care-circle { border-radius: 50%; }
+.vit3-care-no .vit3-care { border-color: #EF4444; color: #EF4444; background: #FEF2F2; }
+
+/* Logomarca grid */
+.vit3-logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.vit3-logo-item { display: flex; flex-direction: column; gap: .1rem; }
+.vit3-logo-item span { font-size: .68rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; }
+.vit3-logo-item strong { font-size: .88rem; color: var(--text-primary); }
+
+/* Cores lista */
+.vit3-cores-lista { display: flex; flex-wrap: wrap; gap: .5rem; }
+.vit3-cor-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-primary); }
+.vit3-cor-ball { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.1); flex-shrink: 0; }
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .vit3-lista { width: 160px; }
+    .vit3-manequim { width: 180px; }
+    .vit3-fc { flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+    .vit3-fc { flex-direction: column; }
+    .vit3-manequim { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); flex-direction: row; flex-wrap: wrap; height: auto; }
+    .vit3-char-wrap { width: 140px; height: 302px; }
+}
