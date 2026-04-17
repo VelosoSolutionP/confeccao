@@ -17,6 +17,7 @@ public class LayoutConfiguration : IEntityTypeConfiguration<Layout>
         builder.Property(l => l.TamanhoLogomarca).HasMaxLength(100).IsRequired();
         builder.Property(l => l.CorLogomarca).HasMaxLength(100).IsRequired();
         builder.Property(l => l.Outros).HasMaxLength(500);
+        builder.Property(l => l.Opcoes).HasMaxLength(500);
         builder.Property(l => l.UrlImagemFrente).HasMaxLength(500);
         builder.Property(l => l.UrlImagemCostas).HasMaxLength(500);
         builder.Property(l => l.TipoProduto).HasConversion<int>();

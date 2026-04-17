@@ -28,7 +28,7 @@ public class CriarLayoutCommandHandler : IRequestHandler<CriarLayoutCommand, Res
         var layout = Layout.Criar(
             request.ClienteId, request.Modelo, request.Descricao, request.TipoProduto,
             request.Tecido, request.Cores, request.TipoLogomarca, request.PosicaoLogomarca,
-            request.TamanhoLogomarca, request.CorLogomarca, request.Outros);
+            request.TamanhoLogomarca, request.CorLogomarca, request.Outros, request.Opcoes);
 
         await _layoutRepo.AdicionarAsync(layout, ct);
         await _uow.SalvarAsync(ct);
@@ -39,5 +39,6 @@ public class CriarLayoutCommandHandler : IRequestHandler<CriarLayoutCommand, Res
     private static LayoutDto MapToDto(Layout l, string nomeCliente) =>
         new(l.Id, l.ClienteId, nomeCliente, l.Modelo, l.Descricao, l.TipoProduto,
             l.Tecido, l.Cores, l.TipoLogomarca, l.PosicaoLogomarca, l.TamanhoLogomarca,
-            l.CorLogomarca, l.Outros, l.UrlImagemFrente, l.UrlImagemCostas, l.CriadoEm);
+            l.CorLogomarca, l.Outros, l.UrlImagemFrente, l.UrlImagemCostas, l.CriadoEm,
+            Opcoes: l.Opcoes);
 }

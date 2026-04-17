@@ -16,4 +16,5 @@ public record CriarLayoutCommand(
     string PosicaoLogomarca,
     string TamanhoLogomarca,
     string CorLogomarca,
-    string? Outros) : IRequest<Result<LayoutDto>>;
+    string? Outros,
+    string? Opcoes = null) : IRequest<Result<LayoutDto>>;

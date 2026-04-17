@@ -17,7 +17,8 @@ public record AtualizarLayoutCommand(
     string PosicaoLogomarca,
     string TamanhoLogomarca,
     string CorLogomarca,
-    string? Outros) : IRequest<Result<LayoutDto>>;
+    string? Outros,
+    string? Opcoes = null) : IRequest<Result<LayoutDto>>;
 
 public class AtualizarLayoutCommandHandler : IRequestHandler<AtualizarLayoutCommand, Result<LayoutDto>>
 {
@@ -40,7 +41,7 @@ public class AtualizarLayoutCommandHandler : IRequestHandler<AtualizarLayoutComm
         layout.Atualizar(request.Modelo, request.Descricao, request.TipoProduto,
                          request.Tecido, request.Cores, request.TipoLogomarca,
                          request.PosicaoLogomarca, request.TamanhoLogomarca,
-                         request.CorLogomarca, request.Outros);
+                         request.CorLogomarca, request.Outros, request.Opcoes);
         _repo.Atualizar(layout);
         await _uow.SalvarAsync(ct);
 
@@ -50,6 +51,7 @@ public class AtualizarLayoutCommandHandler : IRequestHandler<AtualizarLayoutComm
             layout.Modelo, layout.Descricao, layout.TipoProduto,
             layout.Tecido, layout.Cores, layout.TipoLogomarca,
             layout.PosicaoLogomarca, layout.TamanhoLogomarca, layout.CorLogomarca,
-            layout.Outros, layout.UrlImagemFrente, layout.UrlImagemCostas, layout.CriadoEm));
+            layout.Outros, layout.UrlImagemFrente, layout.UrlImagemCostas, layout.CriadoEm,
+            Opcoes: layout.Opcoes));
     }
 }

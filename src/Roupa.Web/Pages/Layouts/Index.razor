@@ -156,6 +156,46 @@
                 </div>
             </div>
 
+            <!-- Opções do produto (bolso/capuz/ziper) -->
+            @{
+                var tpOpc = novoLayout.TipoProduto;
+                bool isCamisa  = tpOpc is Models.TipoProduto.CamisaPolo or Models.TipoProduto.CamisaMalha or Models.TipoProduto.BlusaFeminina;
+                bool isAgasalho = tpOpc is Models.TipoProduto.Agasalho;
+                bool isJaleco  = tpOpc is Models.TipoProduto.Jaleco;
+                bool mostraOpts = isCamisa || isAgasalho || isJaleco;
+            }
+            @if (mostraOpts)
+            {
+                <div class="section-divider">Opções da Peça</div>
+                <div class="opts-checks">
+                    @if (isCamisa || isJaleco)
+                    {
+                        <label class="opt-chk">
+                            <input type="checkbox" checked="@opcComBolso" @onchange="e => opcComBolso = (bool)e.Value!" />
+                            <span>Com bolso</span>
+                        </label>
+                    }
+                    @if (isAgasalho || isJaleco)
+                    {
+                        <label class="opt-chk">
+                            <input type="checkbox" checked="@opcComCapuz" @onchange="e => opcComCapuz = (bool)e.Value!" />
+                            <span>Com capuz</span>
+                        </label>
+                        <label class="opt-chk">
+                            <input type="checkbox" checked="@opcComZiper" @onchange="e => opcComZiper = (bool)e.Value!" />
+                            <span>Com zíper</span>
+                        </label>
+                    }
+                    @if (isAgasalho)
+                    {
+                        <label class="opt-chk">
+                            <input type="checkbox" checked="@opcComBolso" @onchange="e => opcComBolso = (bool)e.Value!" />
+                            <span>Com bolso</span>
+                        </label>
+                    }
+                </div>
+            }
+
             <div class="section-divider">Medidas de Referência</div>
             <div class="row g-2">
                 @foreach (var tam in tamanhos)
@@ -302,6 +342,7 @@ else
     private Dictionary<string, string> medidas = [];
     private bool carregando = true, mostrarDrawer, salvando;
     private string erroForm = "";
+    private bool opcComBolso, opcComCapuz, opcComZiper;
 
     // Exclusão
     private Models.LayoutDto? confirmExcluir;
@@ -330,6 +371,7 @@ else
         mostrarDrawer = true; erroForm = ""; invalidos.Clear();
         medidas = tamanhos.ToDictionary(t => t, _ => "");
         coresSel.Clear();
+        opcComBolso = opcComCapuz = opcComZiper = false;
         novoLayout = new();
         if (Guid.TryParse(ClienteId, out var cId)) novoLayout.ClienteId = cId;
     }
@@ -357,6 +399,13 @@ else
         if (invalidos.Any()) return;
 
         novoLayout.Cores = string.Join(" e ", coresSel);
+
+        // Opções da peça
+        var opts = new List<string>();
+        if (opcComBolso)  opts.Add("ComBolso");
+        if (opcComCapuz)  opts.Add("ComCapuz");
+        if (opcComZiper)  opts.Add("ComZiper");
+        novoLayout.Opcoes = opts.Count > 0 ? string.Join(",", opts) : null;
 
         // Serializa medidas no campo Outros como JSON complementar
         var medidasStr = string.Join(", ", medidas.Where(m => !string.IsNullOrWhiteSpace(m.Value))
@@ -407,14 +456,35 @@ else
         Models.TipoProduto.CamisaPolo   => "Camisa Polo",
         Models.TipoProduto.CamisaMalha  => "Camiseta Malha",
         Models.TipoProduto.Jaleco       => "Jaleco",
+        Models.TipoProduto.Calca        => "Calça",
+        Models.TipoProduto.Bermuda      => "Bermuda",
+        Models.TipoProduto.Agasalho     => "Agasalho",
+        Models.TipoProduto.Colete       => "Colete",
+        Models.TipoProduto.Vestido      => "Vestido ♀",
+        Models.TipoProduto.CalcaLegging => "Legging ♀",
+        Models.TipoProduto.Saia         => "Saia ♀",
+        Models.TipoProduto.Macacao      => "Macacão ♀",
+        Models.TipoProduto.BlusaFeminina=> "Blusa Fem. ♀",
+        Models.TipoProduto.Shorts       => "Shorts ♀",
+        Models.TipoProduto.Outro        => "Outro",
         _ => t.ToString()
     };
 
     private static string NomeTipoEn(Models.TipoProduto t) => t switch
     {
-        Models.TipoProduto.CamisaPolo  => "polo shirt",
-        Models.TipoProduto.CamisaMalha => "t-shirt",
-        Models.TipoProduto.Jaleco      => "work jacket",
+        Models.TipoProduto.CamisaPolo   => "polo shirt",
+        Models.TipoProduto.CamisaMalha  => "t-shirt",
+        Models.TipoProduto.Jaleco       => "work jacket",
+        Models.TipoProduto.Calca        => "formal trousers",
+        Models.TipoProduto.Bermuda      => "shorts",
+        Models.TipoProduto.Agasalho     => "tracksuit jacket",
+        Models.TipoProduto.Colete       => "vest",
+        Models.TipoProduto.Vestido      => "dress",
+        Models.TipoProduto.CalcaLegging => "leggings",
+        Models.TipoProduto.Saia         => "skirt",
+        Models.TipoProduto.Macacao      => "jumpsuit",
+        Models.TipoProduto.BlusaFeminina=> "women blouse",
+        Models.TipoProduto.Shorts       => "women shorts",
         _ => t.ToString().ToLower()
     };
 

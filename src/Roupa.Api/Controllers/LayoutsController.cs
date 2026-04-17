@@ -45,7 +45,7 @@ public class LayoutsController : ControllerBase
         var result = await _mediator.Send(new CriarLayoutCommand(
             dto.ClienteId, dto.Modelo, dto.Descricao, dto.TipoProduto,
             dto.Tecido, dto.Cores, dto.TipoLogomarca, dto.PosicaoLogomarca,
-            dto.TamanhoLogomarca, dto.CorLogomarca, dto.Outros));
+            dto.TamanhoLogomarca, dto.CorLogomarca, dto.Outros, dto.Opcoes));
         if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Dados!.Id }, result.Dados);
     }
@@ -57,7 +57,7 @@ public class LayoutsController : ControllerBase
         var result = await _mediator.Send(new AtualizarLayoutCommand(
             id, dto.Modelo, dto.Descricao, dto.TipoProduto,
             dto.Tecido, dto.Cores, dto.TipoLogomarca, dto.PosicaoLogomarca,
-            dto.TamanhoLogomarca, dto.CorLogomarca, dto.Outros));
+            dto.TamanhoLogomarca, dto.CorLogomarca, dto.Outros, dto.Opcoes));
         if (!result.Sucesso) return BadRequest(new { erro = result.Erro });
         return Ok(result.Dados);
     }

@@ -19,7 +19,8 @@ public record LayoutDto(
     string? UrlImagemFrente,
     string? UrlImagemCostas,
     DateTime CriadoEm,
-    bool Aprovado = false);
+    bool Aprovado = false,
+    string? Opcoes = null);
 
 public record CriarLayoutDto(
     Guid ClienteId,
@@ -32,4 +33,5 @@ public record CriarLayoutDto(
     string PosicaoLogomarca,
     string TamanhoLogomarca,
     string CorLogomarca,
-    string? Outros);
+    string? Outros,
+    string? Opcoes = null);

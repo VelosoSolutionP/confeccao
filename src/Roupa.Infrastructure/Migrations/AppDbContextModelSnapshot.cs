@@ -235,6 +235,10 @@ namespace Roupa.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Opcoes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Outros")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");

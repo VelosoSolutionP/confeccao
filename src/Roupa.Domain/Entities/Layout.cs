@@ -19,6 +19,7 @@ public class Layout : BaseEntity
     public string TamanhoLogomarca { get; private set; } = default!;
     public string CorLogomarca { get; private set; } = default!;
     public string? Outros { get; private set; }
+    public string? Opcoes { get; private set; }
 
     public string? UrlImagemFrente { get; private set; }
     public string? UrlImagemCostas { get; private set; }
@@ -36,7 +37,8 @@ public class Layout : BaseEntity
         string posicaoLogomarca,
         string tamanhoLogomarca,
         string corLogomarca,
-        string? outros = null)
+        string? outros = null,
+        string? opcoes = null)
     {
         return new Layout
         {
@@ -50,7 +52,8 @@ public class Layout : BaseEntity
             PosicaoLogomarca = posicaoLogomarca,
             TamanhoLogomarca = tamanhoLogomarca,
             CorLogomarca = corLogomarca,
-            Outros = outros
+            Outros = outros,
+            Opcoes = opcoes
         };
     }
 
@@ -58,7 +61,7 @@ public class Layout : BaseEntity
         string modelo, string descricao, TipoProduto tipoProduto,
         string tecido, string cores, TipoLogomarca tipoLogomarca,
         string posicaoLogomarca, string tamanhoLogomarca, string corLogomarca,
-        string? outros)
+        string? outros, string? opcoes = null)
     {
         Modelo = modelo;
         Descricao = descricao;
@@ -70,6 +73,7 @@ public class Layout : BaseEntity
         TamanhoLogomarca = tamanhoLogomarca;
         CorLogomarca = corLogomarca;
         Outros = outros;
+        Opcoes = opcoes;
         SetAtualizado();
     }
 
