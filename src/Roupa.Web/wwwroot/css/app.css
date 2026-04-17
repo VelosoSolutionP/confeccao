@@ -3707,32 +3707,38 @@ code { color: #c02d76; }
 /* Backdrop — fecha dropdowns ao clicar fora */
 .vt-backdrop { position: fixed; inset: 0; z-index: 100; }
 
-/* Shell principal — fluxo normal de documento */
+/* Shell principal — tela branca, sem padding lateral */
 .vt-shell {
+    margin: -1.75rem -2rem;
     display: flex;
     flex-direction: column;
-    background: var(--surface-50);
+    background: #fff;
 }
 
 /* ══ TOPBAR ══ */
 .vt-topbar {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: .75rem 1.25rem;
-    background: var(--surface-0);
-    border-bottom: 1px solid var(--surface-200);
+    gap: .85rem;
+    padding: .85rem 2rem;
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.07);
     flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    z-index: 110;
     flex-shrink: 0;
 }
 .vt-topbar-brand {
-    font-size: .95rem; font-weight: 800; color: var(--surface-800);
-    display: flex; align-items: center; gap: .4rem; white-space: nowrap;
+    font-size: .9rem; font-weight: 700; color: var(--surface-500);
+    white-space: nowrap; letter-spacing: .04em; text-transform: uppercase;
 }
-.vt-topbar-brand i { color: var(--brand-500); }
+.vt-voltar-btn {
+    display: flex; align-items: center; gap: .4rem;
+    background: var(--surface-100); border: 1px solid var(--surface-200);
+    border-radius: var(--radius-sm); padding: .42rem .9rem;
+    font-size: .82rem; font-weight: 600; color: var(--surface-700);
+    cursor: pointer; white-space: nowrap;
+    transition: all var(--transition);
+}
+.vt-voltar-btn:hover { background: var(--surface-200); color: var(--surface-900); }
 
 /* ══ CUSTOM SELECT ══ */
 .vt-cs { position: relative; z-index: 120; min-width: 220px; max-width: 340px; flex: 1; }
@@ -3805,7 +3811,7 @@ code { color: #c02d76; }
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.25rem;
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem 2rem;
     align-content: start;
 }
 
@@ -3927,7 +3933,7 @@ code { color: #c02d76; }
    FICHA TÉCNICA DETALHADA  (vt-detail)
    ════════════════════════════════════════ */
 .vt-detail {
-    margin: 1.25rem 1.5rem;
+    margin: 1.25rem 2rem;
     background: var(--surface-0);
     border: 1.5px solid var(--surface-200);
     border-radius: var(--radius-lg);
@@ -4148,6 +4154,8 @@ code { color: #c02d76; }
     .vt-cs { min-width: 0; flex: 1 1 200px; }
     .vt-detail-body { flex-direction: column; }
     .vt-man-col { width: 100%; border-right: none; border-bottom: 1px solid var(--surface-200); }
-    .vt-cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: .85rem; }
+    .vt-cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: 1rem; }
+    .vt-detail { margin: 1rem; }
+    .vt-topbar { padding: .75rem 1rem; }
 }
 
