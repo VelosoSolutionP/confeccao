@@ -9,6 +9,14 @@ using Roupa.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"] ?? "";
+    o.TracesSampleRate = 1.0;
+    o.SendDefaultPii = false;
+    o.Environment = builder.Environment.EnvironmentName;
+});
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
