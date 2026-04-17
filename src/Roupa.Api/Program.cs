@@ -79,6 +79,9 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+// CORS primeiro — garante header em toda resposta, inclusive erros
+app.UseCors("AllowAll");
+
 // Auto-migrar banco ao iniciar (seguro: só aplica migrações pendentes)
 using (var scope = app.Services.CreateScope())
 {
@@ -90,9 +93,6 @@ await Roupa.Infrastructure.DependencyInjection.SeedRolesAsync(app.Services);
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
-// CORS deve ser o primeiro middleware
-app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
