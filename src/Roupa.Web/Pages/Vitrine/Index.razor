@@ -106,7 +106,24 @@
     </div>
 
     <!-- ══ CONTEÚDO ══ -->
-    @if (string.IsNullOrEmpty(filtroClienteId))
+    @if (erroApi is not null)
+    {
+        <div class="vt-empty-state">
+            <i class="bi bi-wifi-off"></i>
+            <h3>API indisponível</h3>
+            <p>@erroApi</p>
+            <button class="btn-primary" style="margin-top:.5rem" @onclick="TentarNovamente">
+                <i class="bi bi-arrow-clockwise"></i> Tentar novamente
+            </button>
+        </div>
+    }
+    else if (carregando)
+    {
+        <div class="vt-cards-grid">
+            @for (var i = 0; i < 6; i++) { <div class="vt-sk-card"></div> }
+        </div>
+    }
+    else if (string.IsNullOrEmpty(filtroClienteId))
     {
         <div class="vt-empty-state">
             <i class="bi bi-buildings"></i>
@@ -117,17 +134,12 @@
     else if (detalhe is null)
     {
         <!-- GRID 3D -->
-        @if (carregando)
-        {
-            <div class="vt-cards-grid">
-                @for (var i = 0; i < 6; i++) { <div class="vt-sk-card"></div> }
-            </div>
-        }
-        else if (!ProdutosFiltrados().Any())
+        @if (!ProdutosFiltrados().Any())
         {
             <div class="vt-empty-state">
                 <i class="bi bi-bag-x"></i>
-                <h3>Nenhuma ficha encontrada</h3>
+                <h3>Nenhuma ficha cadastrada</h3>
+                <p>Esta empresa ainda não possui fichas de uniforme.</p>
             </div>
         }
         else
@@ -468,6 +480,7 @@
     Models.LayoutDto?       detalhe;
     HashSet<Guid>           aprovados = [];
     bool carregando = true;
+    string? erroApi;
 
     // filtros
     string busca = "", buscaCliente = "", filtroClienteId = "";
@@ -490,12 +503,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var t1 = Api.ListarLayoutsAsync();
-        var t2 = Api.ListarClientesAsync();
-        await Task.WhenAll(t1, t2);
-        produtos  = t1.Result;
-        clientes  = t2.Result;
-        carregando = false;
+        try
+        {
+            var t1 = Api.ListarLayoutsAsync();
+            var t2 = Api.ListarClientesAsync();
+            await Task.WhenAll(t1, t2);
+            produtos  = t1.Result;
+            clientes  = t2.Result;
+        }
+        catch
+        {
+            erroApi = "Não foi possível conectar à API. Aguarde alguns segundos e tente novamente.";
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    async Task TentarNovamente()
+    {
+        erroApi = null; carregando = true; StateHasChanged();
+        try
+        {
+            var t1 = Api.ListarLayoutsAsync();
+            var t2 = Api.ListarClientesAsync();
+            await Task.WhenAll(t1, t2);
+            produtos  = t1.Result;
+            clientes  = t2.Result;
+        }
+        catch
+        {
+            erroApi = "API ainda indisponível. Aguarde e tente novamente.";
+        }
+        finally { carregando = false; }
     }
 
     string? EmpresaSelecionada() => string.IsNullOrEmpty(filtroClienteId) ? null : nomeEmpresaSel;

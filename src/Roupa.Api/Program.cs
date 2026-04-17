@@ -87,6 +87,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Roupa.Infrastructure.Persistence.AppDbContext>();
     await db.Database.MigrateAsync();
+    // Garante coluna Opcoes mesmo se migration foi registrado sem executar o DDL
+    await db.Database.ExecuteSqlRawAsync(
+        "ALTER TABLE \"Layouts\" ADD COLUMN IF NOT EXISTS \"Opcoes\" character varying(500)");
 }
 
 await Roupa.Infrastructure.DependencyInjection.SeedRolesAsync(app.Services);
