@@ -18,7 +18,8 @@ public record LayoutDto(
     string? Outros,
     string? UrlImagemFrente,
     string? UrlImagemCostas,
-    DateTime CriadoEm);
+    DateTime CriadoEm,
+    bool Aprovado = false);
 
 public record CriarLayoutDto(
     Guid ClienteId,

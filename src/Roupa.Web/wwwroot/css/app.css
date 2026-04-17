@@ -3125,12 +3125,70 @@ code { color: #c02d76; }
 
 /* Stage */
 .vit2-stage {
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; flex-direction: row; align-items: flex-start; gap: 1rem;
     background: linear-gradient(160deg,#f8f9ff 0%,#eef2ff 100%);
     border-radius: 12px; padding: .85rem 1rem;
     border: 1px solid rgba(99,102,241,.12);
     min-height: 460px;
 }
+.vit2-stage-main { display: flex; flex-direction: column; align-items: center; gap: .5rem; flex-shrink: 0; }
+
+/* Botões de ângulo */
+.vit2-angles { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.vit2-angle-btn {
+    padding: .22rem .48rem; border-radius: 6px;
+    border: 1.5px solid var(--border-color); background: white;
+    color: var(--text-secondary); cursor: pointer;
+    font-size: .7rem; font-weight: 600;
+    transition: all .15s; display: flex; align-items: center; gap: .2rem;
+}
+.vit2-angle-btn:hover { border-color: var(--accent,#6366F1); color: var(--accent,#6366F1); }
+.vit2-angle-btn.ativo { background: var(--accent,#6366F1); color: white; border-color: var(--accent,#6366F1); }
+
+/* Efeito perspectiva 45° */
+.char-card.angle-45 { transform: perspective(700px) rotateY(-28deg) scaleX(0.88); }
+
+/* Ficha técnica lateral */
+.vit2-ficha-lat {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: .7rem;
+    padding-top: .25rem;
+}
+.vit2-ficha-lat-title {
+    font-size: .78rem; font-weight: 700; color: var(--accent,#6366F1);
+    text-transform: uppercase; letter-spacing: .07em;
+    display: flex; align-items: center; gap: .35rem;
+}
+.vit2-spec-label {
+    font-size: .68rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem;
+}
+
+/* Tamanhos na ficha */
+.vit2-tam-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.vit2-tam-chip {
+    padding: .2rem .42rem; border-radius: 6px;
+    border: 1.5px solid var(--border-color);
+    font-size: .72rem; font-weight: 700;
+    background: white; color: var(--text-secondary);
+    transition: all .15s;
+}
+.vit2-tam-chip:hover { border-color: var(--accent,#6366F1); color: var(--accent,#6366F1); }
+.vit2-tam-chip.ativo { background: var(--accent,#6366F1); color: white; border-color: var(--accent,#6366F1); }
+
+/* Cuidados de lavagem */
+.vit2-cuidados { display: flex; gap: .55rem; flex-wrap: wrap; }
+.vit2-cuidado { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.vit2-cuidado span { font-size: .6rem; color: var(--text-secondary); text-align: center; max-width: 46px; line-height: 1.2; }
+.vit2-care-icon {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px; background: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 700; color: var(--text-primary);
+}
+.vit2-care-circle { border-radius: 50%; }
+.vit2-care-no .vit2-care-icon { border-color: #EF4444; color: #EF4444; }
 
 .vit2-stage-top {
     display: flex; align-items: center; gap: .6rem;

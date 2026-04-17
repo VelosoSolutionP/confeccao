@@ -1,311 +1,128 @@
-@* Personagem cartoon SVG — camadas por tipo de peça, masc/fem, tamanho *@
-<div class="char-wrap" style="transform:@TamScale;transform-origin:bottom center">
-    <div class="char-card @(Girando ? "spinning" : "")">
+@* Personagem cartoon SVG — frente, perfil, costas, spin *@
+<div class="char-wrap" style="transform-origin:bottom center">
+    <div class="char-card @GetCardClass()">
 
-        <!-- FRENTE -->
-        <div class="char-face front">
-            <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                <!-- sombra -->
-                <ellipse cx="120" cy="511" rx="70" ry="9" fill="rgba(0,0,0,.13)"/>
+        @if (Angulo == 90)
+        {
+            <!-- ══ PERFIL (90°) ══ -->
+            <div class="char-face front">
+                <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                    <ellipse cx="118" cy="511" rx="50" ry="8" fill="rgba(0,0,0,.13)"/>
+                    <!-- Sapatos perfil -->
+                    <path d="M90 443 Q84 458 122 460 L145 459 Q151 459 151 452 L151 442 Q151 436 144 435 L106 435 Q94 435 90 443Z" fill="@ShoesColor"/>
+                    <rect x="98" y="428" width="40" height="14" rx="4" fill="@ShoesColor"/>
+                    <rect x="100" y="408" width="34" height="24" rx="3" fill="#EFEFEF"/>
+                    <!-- Pernas perfil -->
+                    @if (IsBermuda)
+                    {
+                        <rect x="96" y="265" width="44" height="115" rx="8" fill="@PantsColor"/>
+                        <rect x="102" y="370" width="30" height="44" rx="5" fill="@SkinColor"/>
+                        <rect x="93" y="260" width="50" height="12" rx="5" fill="rgba(0,0,0,.18)"/>
+                    }
+                    else
+                    {
+                        <rect x="96" y="265" width="44" height="165" rx="8" fill="@PantsColor"/>
+                        <rect x="93" y="258" width="50" height="14" rx="5" fill="rgba(0,0,0,.28)"/>
+                        <rect x="114" y="256" width="16" height="16" rx="3" fill="#B8960C"/>
+                    }
+                    <!-- Corpo perfil -->
+                    @if (IsColete)
+                    {
+                        <rect x="92" y="148" width="52" height="120" rx="6" fill="@ShirtColor"/>
+                        <rect x="142" y="152" width="24" height="80" rx="10" fill="@SkinColor"/>
+                        <ellipse cx="154" cy="240" rx="13" ry="10" fill="@SkinColor"/>
+                    }
+                    else if (IsAgasalho)
+                    {
+                        <rect x="90" y="148" width="52" height="120" rx="6" fill="@ShirtColor"/>
+                        <rect x="140" y="152" width="26" height="88" rx="10" fill="@ShirtColor"/>
+                        <rect x="155" y="233" width="20" height="13" rx="5" fill="@ShirtColor2"/>
+                        <ellipse cx="153" cy="252" rx="13" ry="10" fill="@SkinColor"/>
+                    }
+                    else if (IsJaleco)
+                    {
+                        <rect x="88" y="148" width="55" height="155" rx="6" fill="@ShirtColor"/>
+                        <rect x="140" y="152" width="26" height="92" rx="10" fill="@ShirtColor"/>
+                        <ellipse cx="153" cy="252" rx="13" ry="10" fill="@SkinColor"/>
+                    }
+                    else
+                    {
+                        <rect x="90" y="148" width="52" height="120" rx="6" fill="@ShirtColor"/>
+                        <rect x="140" y="152" width="26" height="88" rx="10" fill="@ShirtColor"/>
+                        <ellipse cx="153" cy="248" rx="13" ry="10" fill="@SkinColor"/>
+                    }
+                    <!-- Pescoço -->
+                    <rect x="106" y="117" width="24" height="24" rx="5" fill="@SkinColor"/>
+                    <!-- Cabeça perfil (face p/ direita) -->
+                    <ellipse cx="122" cy="74" rx="43" ry="46" fill="@SkinColor"/>
+                    <path d="M79 68 Q85 16 122 14 Q158 16 162 55 Q154 22 122 20 Q92 22 87 68 Z" fill="#3D2B1A"/>
+                    <ellipse cx="122" cy="20" rx="42" ry="14" fill="#3D2B1A"/>
+                    @if (Feminino) { <path d="M79 68 Q72 108 76 138 Q80 108 88 98 Z" fill="#3D2B1A"/> }
+                    <!-- Orelha esquerda -->
+                    <ellipse cx="80" cy="78" rx="7" ry="11" fill="@SkinColor"/>
+                    <!-- Olho direito -->
+                    @if (Feminino)
+                    {
+                        <ellipse cx="148" cy="74" rx="9" ry="11" fill="white"/>
+                        <circle cx="150" cy="75" r="6" fill="#1A0D05"/>
+                        <circle cx="148" cy="72" r="2.5" fill="white"/>
+                        <path d="M139 64 Q148 60 158 64" stroke="#1A0D05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <ellipse cx="135" cy="87" rx="6" ry="4" fill="rgba(220,100,100,.15)"/>
+                    }
+                    else
+                    {
+                        <ellipse cx="147" cy="76" rx="9" ry="10" fill="white"/>
+                        <circle cx="149" cy="77" r="6" fill="#1A0D05"/>
+                        <circle cx="147" cy="74" r="2.5" fill="white"/>
+                        <path d="M138 65 Q147 61 158 65" stroke="#3D2B1A" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    }
+                    <!-- Nariz perfil -->
+                    <path d="M163 84 Q174 94 171 107" stroke="#C8806A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <!-- Boca perfil -->
+                    <path d="M158 108 Q166 113 164 120" stroke="#C06050" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+        }
+        else if (Angulo == 180 && !Girando)
+        {
+            <!-- ══ COSTAS estático (180°) ══ -->
+            <div class="char-face front">
+                @BackSvg
+            </div>
+        }
+        else
+        {
+            <!-- ══ FRENTE (0°, 45°, spin) ══ -->
+            <div class="char-face front">
+                @FrontSvg
+            </div>
+            @if (Girando)
+            {
+                <div class="char-face back">
+                    @BackSvg
+                </div>
+            }
+        }
 
-                <!-- SAPATOS -->
-                <rect x="60" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
-                <rect x="132" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
-                <rect x="63" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
-                <rect x="135" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
-                <!-- meias -->
-                <rect x="66" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
-                <rect x="139" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
-
-                <!-- PERNAS / SHORTS dependendo do tipo -->
-                @if (IsBermuda)
-                {
-                    <!-- Bermuda (para no joelho) -->
-                    <rect x="58" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
-                    <rect x="129" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
-                    <rect x="58" y="265" width="124" height="38" rx="6" fill="@PantsColor"/>
-                    <!-- Perna visível abaixo da bermuda -->
-                    <rect x="65" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
-                    <rect x="137" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
-                    <!-- Detalhe bolso bermuda -->
-                    <rect x="66" y="285" width="28" height="20" rx="3" fill="rgba(0,0,0,.12)"/>
-                    <!-- Elástico/cinto moletom -->
-                    <rect x="56" y="261" width="128" height="12" rx="5" fill="rgba(0,0,0,.18)"/>
-                    <line x1="56" y1="267" x2="184" y2="267" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
-                }
-                else if (IsCalca)
-                {
-                    <!-- Calça comprida -->
-                    <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
-                    <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
-                    <rect x="106" y="256" width="18" height="18" rx="3" fill="#B8960C"/>
-                    <rect x="112" y="262" width="6" height="6" rx="1" fill="#8B6914"/>
-                }
-                else
-                {
-                    <!-- Padrão: calça -->
-                    <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
-                    <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
-                    <rect x="106" y="256" width="18" height="18" rx="3" fill="#B8960C"/>
-                    <rect x="112" y="262" width="6" height="6" rx="1" fill="#8B6914"/>
-                }
-
-                <!-- PARTE SUPERIOR dependendo do tipo -->
-                @if (IsColete)
-                {
-                    <!-- Colete (sem mangas) — braços nus -->
-                    <rect x="80" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
-                    <rect x="130" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
-                    <!-- Corpo do colete -->
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
-                    <!-- Detalhes colete -->
-                    <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
-                    <rect x="58" y="168" width="42" height="32" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
-                    @((MarkupString)$"<text x='79' y='188' text-anchor='middle' font-size='8' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
-                }
-                else if (IsJaleco)
-                {
-                    <!-- Jaleco / Bata (comprido, lapela aberta) -->
-                    <path d="M55 150 L15 220 L42 230 L72 168 Z" fill="@ShirtColor"/>
-                    <path d="M185 150 L225 220 L198 230 L168 168 Z" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="130" height="155" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="278" width="130" height="25" rx="0" fill="rgba(0,0,0,.08)"/>
-                    <!-- Lapela esquerda -->
-                    <path d="M90 148 L75 165 L95 205 L120 210 L120 148 Z" fill="white" opacity=".9"/>
-                    <!-- Lapela direita -->
-                    <path d="M150 148 L165 165 L145 205 L120 210 L120 148 Z" fill="white" opacity=".9"/>
-                    <!-- Bolso peito -->
-                    <rect x="58" y="175" width="40" height="32" rx="4" fill="rgba(255,255,255,.25)" stroke="rgba(0,0,0,.15)" stroke-width="1"/>
-                    @((MarkupString)"<text x='78' y='195' text-anchor='middle' font-size='7' fill='rgba(0,0,0,.5)' font-family='Arial,sans-serif'>bolso</text>")
-                    <!-- Botões -->
-                    <circle cx="120" cy="225" r="4" fill="rgba(255,255,255,.5)"/>
-                    <circle cx="120" cy="245" r="4" fill="rgba(255,255,255,.5)"/>
-                }
-                else if (IsAgasalho)
-                {
-                    <!-- Agasalho / Moletom (zip, mangas longas com punho) -->
-                    <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
-                    <!-- Punhos -->
-                    <rect x="18" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
-                    <rect x="200" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
-                    <!-- Corpo -->
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
-                    <!-- Zip central -->
-                    <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(255,255,255,.4)" stroke-width="3"/>
-                    <circle cx="120" cy="200" r="5" fill="rgba(0,0,0,.2)"/>
-                    <!-- Gola alta agasalho -->
-                    <path d="M88 148 L100 125 L120 120 L140 125 L152 148 Q140 142 120 140 Q100 142 88 148 Z" fill="@ShirtColor2"/>
-                    <!-- Faixa lateral -->
-                    <rect x="55" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
-                    <rect x="167" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
-                }
-                else if (IsCamisaMalha)
-                {
-                    <!-- Camiseta Malha (gola careca) -->
-                    <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
-                    <!-- Gola careca -->
-                    <ellipse cx="120" cy="148" rx="32" ry="12" fill="@ShirtColor"/>
-                    <ellipse cx="120" cy="148" rx="28" ry="8" fill="rgba(0,0,0,.1)"/>
-                    <!-- Logo -->
-                    <rect x="58" y="168" width="40" height="30" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
-                    @((MarkupString)$"<text x='78' y='187' text-anchor='middle' font-size='7' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
-                }
-                else
-                {
-                    <!-- Camisa Polo (padrão) -->
-                    <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
-                    <!-- Gola polo -->
-                    <path d="M88 148 L100 178 L120 180 L140 178 L152 148 Q140 132 120 130 Q100 132 88 148 Z" fill="white" opacity=".92"/>
-                    <circle cx="120" cy="150" r="3.5" fill="rgba(0,0,0,.2)"/>
-                    <circle cx="120" cy="163" r="3.5" fill="rgba(0,0,0,.2)"/>
-                    <!-- Logo bordado -->
-                    <rect x="60" y="168" width="40" height="30" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
-                    @((MarkupString)$"<text x='80' y='187' text-anchor='middle' font-size='7' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
-                }
-
-                <!-- PESCOÇO -->
-                <rect x="106" y="117" width="28" height="24" rx="6" fill="@SkinColor"/>
-
-                <!-- CABEÇA — feminina ou masculina -->
-                @if (Feminino)
-                {
-                    <!-- Rosto feminino -->
-                    <circle cx="120" cy="74" r="50" fill="@SkinColor"/>
-                    <!-- Cabelo longo feminino -->
-                    <path d="M70 70 Q68 18 120 15 Q172 18 170 70 Q162 32 120 30 Q78 32 70 70 Z" fill="#3D2B1A"/>
-                    <ellipse cx="120" cy="30" rx="50" ry="19" fill="#3D2B1A"/>
-                    <!-- Cabelo caindo na lateral -->
-                    <path d="M70 70 Q62 110 65 140 Q68 110 78 98 Z" fill="#3D2B1A"/>
-                    <path d="M170 70 Q178 110 175 140 Q172 110 162 98 Z" fill="#3D2B1A"/>
-                    <!-- Rabo de cavalo / franja -->
-                    <path d="M80 30 Q120 10 160 30" fill="#4A3520" stroke="none"/>
-                    <!-- Orelhas -->
-                    <ellipse cx="70" cy="80" rx="8" ry="12" fill="@SkinColor"/>
-                    <ellipse cx="170" cy="80" rx="8" ry="12" fill="@SkinColor"/>
-                    <!-- Olhos femininos (mais arredondados) -->
-                    <ellipse cx="103" cy="76" rx="11" ry="12" fill="white"/>
-                    <ellipse cx="137" cy="76" rx="11" ry="12" fill="white"/>
-                    <circle cx="105" cy="77" r="7" fill="#1A0D05"/>
-                    <circle cx="139" cy="77" r="7" fill="#1A0D05"/>
-                    <circle cx="102" cy="74" r="2.5" fill="white"/>
-                    <circle cx="136" cy="74" r="2.5" fill="white"/>
-                    <!-- Cílios -->
-                    <path d="M92 66 Q103 62 114 66" stroke="#1A0D05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <path d="M126 66 Q137 62 148 66" stroke="#1A0D05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <!-- Nariz delicado -->
-                    <path d="M117 89 Q120 94 123 89" stroke="#C8806A" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <!-- Boca feminina -->
-                    <path d="M106 102 Q120 114 134 102" stroke="#C05050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <path d="M109 102 Q120 108 131 102" fill="rgba(200,80,80,.3)"/>
-                    <!-- Bochecha blush -->
-                    <ellipse cx="92" cy="88" rx="8" ry="5" fill="rgba(220,100,100,.15)"/>
-                    <ellipse cx="148" cy="88" rx="8" ry="5" fill="rgba(220,100,100,.15)"/>
-                }
-                else
-                {
-                    <!-- Rosto masculino -->
-                    <circle cx="120" cy="75" r="51" fill="@SkinColor"/>
-                    <!-- Cabelo curto masculino -->
-                    <path d="M69 72 Q72 20 120 17 Q168 20 171 72 Q162 38 120 36 Q78 38 69 72 Z" fill="#3D2B1A"/>
-                    <ellipse cx="120" cy="32" rx="50" ry="18" fill="#3D2B1A"/>
-                    <!-- Orelhas -->
-                    <ellipse cx="69" cy="81" rx="9" ry="13" fill="@SkinColor"/>
-                    <ellipse cx="171" cy="81" rx="9" ry="13" fill="@SkinColor"/>
-                    <!-- Olhos masculinos -->
-                    <ellipse cx="102" cy="76" rx="11" ry="11" fill="white"/>
-                    <ellipse cx="138" cy="76" rx="11" ry="11" fill="white"/>
-                    <circle cx="104" cy="77" r="7" fill="#1A0D05"/>
-                    <circle cx="140" cy="77" r="7" fill="#1A0D05"/>
-                    <circle cx="101" cy="74" r="2.5" fill="white"/>
-                    <circle cx="137" cy="74" r="2.5" fill="white"/>
-                    <!-- Sobrancelhas masculinas (mais retas) -->
-                    <path d="M91 63 Q102 59 113 63" stroke="#3D2B1A" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <path d="M127 63 Q138 59 149 63" stroke="#3D2B1A" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <!-- Nariz -->
-                    <path d="M116 89 Q120 97 124 89" stroke="#C8806A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <!-- Sorriso -->
-                    <path d="M103 103 Q120 118 137 103" stroke="#C06050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <path d="M103 103 Q120 120 137 103" fill="rgba(200,100,80,.25)"/>
-                }
-            </svg>
-        </div>
-
-        <!-- COSTAS -->
-        <div class="char-face back">
-            <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                <ellipse cx="120" cy="511" rx="70" ry="9" fill="rgba(0,0,0,.13)"/>
-                <!-- Sapatos -->
-                <rect x="60" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
-                <rect x="132" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
-                <rect x="63" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
-                <rect x="135" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
-                <rect x="66" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
-                <rect x="139" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
-                <!-- Pernas costas -->
-                @if (IsBermuda)
-                {
-                    <rect x="58" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
-                    <rect x="129" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
-                    <rect x="58" y="265" width="124" height="38" rx="6" fill="@PantsColor"/>
-                    <rect x="65" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
-                    <rect x="137" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
-                    <rect x="56" y="261" width="128" height="12" rx="5" fill="rgba(0,0,0,.18)"/>
-                }
-                else
-                {
-                    <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
-                    <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
-                    <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
-                }
-                <!-- Camisa costas -->
-                @if (IsJaleco)
-                {
-                    <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="130" height="155" rx="6" fill="@ShirtColor"/>
-                    <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.7)" stroke-width="9" fill="none" stroke-linecap="round"/>
-                    <line x1="120" y1="148" x2="120" y2="303" stroke="rgba(0,0,0,.08)" stroke-width="1.5" stroke-dasharray="4,4"/>
-                }
-                else if (IsAgasalho)
-                {
-                    <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
-                    <rect x="18" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
-                    <rect x="200" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
-                    <rect x="167" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
-                    <path d="M88 148 Q120 138 152 148" stroke="@ShirtColor2" stroke-width="10" fill="none" stroke-linecap="round"/>
-                }
-                else if (IsColete)
-                {
-                    <rect x="80" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
-                    <rect x="130" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
-                    <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.5)" stroke-width="8" fill="none" stroke-linecap="round"/>
-                }
-                else
-                {
-                    <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
-                    <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
-                    <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
-                    <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.6)" stroke-width="9" fill="none" stroke-linecap="round"/>
-                    <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.07)" stroke-width="1.5" stroke-dasharray="4,4"/>
-                }
-                <!-- Pescoço costas -->
-                <rect x="106" y="117" width="28" height="26" rx="6" fill="@SkinColor"/>
-                <!-- Cabeça costas (tudo cabelo) -->
-                @if (Feminino)
-                {
-                    <circle cx="120" cy="74" r="50" fill="#3D2B1A"/>
-                    <ellipse cx="120" cy="74" rx="50" ry="50" fill="#3D2B1A"/>
-                    <ellipse cx="120" cy="110" rx="25" ry="10" fill="@SkinColor"/>
-                    <path d="M70 70 Q62 110 65 140 Q68 110 78 98 Z" fill="#3D2B1A"/>
-                    <path d="M170 70 Q178 110 175 140 Q172 110 162 98 Z" fill="#3D2B1A"/>
-                }
-                else
-                {
-                    <circle cx="120" cy="75" r="51" fill="#3D2B1A"/>
-                    <ellipse cx="120" cy="113" rx="24" ry="10" fill="@SkinColor"/>
-                }
-                <ellipse cx="69" cy="81" rx="9" ry="13" fill="@SkinColor"/>
-                <ellipse cx="171" cy="81" rx="9" ry="13" fill="@SkinColor"/>
-            </svg>
-        </div>
     </div>
     <div class="char-label">
-        @if (Girando) { <i class="bi bi-arrow-repeat" style="animation:spin360label .8s linear infinite;display:inline-block"></i><span>360°</span> }
-        else { <span>@ViewLabel</span> }
+        @if (Girando) { <i class="bi bi-arrow-repeat spin-icon"></i><span> 360°</span> }
+        else { <span>@AnguloLabel</span> }
     </div>
 </div>
 
 @code {
     [Parameter] public string ShirtColor  { get; set; } = "#DC2626";
-    [Parameter] public string ShirtColor2 { get; set; } = "#991B1B"; // cor secundária (agasalho)
+    [Parameter] public string ShirtColor2 { get; set; } = "#991B1B";
     [Parameter] public string PantsColor  { get; set; } = "#1E3A5F";
     [Parameter] public string ShoesColor  { get; set; } = "#2D2D2D";
     [Parameter] public string LogoColor   { get; set; } = "#FFFFFF";
     [Parameter] public string SkinColor   { get; set; } = "#F5C5A0";
     [Parameter] public bool   Feminino    { get; set; } = false;
-    [Parameter] public bool   Girando     { get; set; } = false;
-    [Parameter] public string ViewLabel   { get; set; } = "Frente";
+    [Parameter] public int    Angulo      { get; set; } = 0;
     [Parameter] public Models.TipoProduto Tipo { get; set; } = Models.TipoProduto.CamisaPolo;
 
+    bool Girando     => Angulo >= 360;
     bool IsBermuda   => Tipo == Models.TipoProduto.Bermuda;
     bool IsCalca     => Tipo == Models.TipoProduto.Calca;
     bool IsJaleco    => Tipo == Models.TipoProduto.Jaleco;
@@ -313,6 +130,240 @@
     bool IsAgasalho  => Tipo == Models.TipoProduto.Agasalho;
     bool IsCamisaMalha => Tipo == Models.TipoProduto.CamisaMalha;
 
-    // Escala horizontal por tamanho (só largura muda)
-    string TamScale => ""; // aplicado no pai via parâmetro
+    string AnguloLabel => Angulo switch
+    {
+        45  => "45°",
+        90  => "Perfil",
+        180 => "Costas",
+        _   => "Frente"
+    };
+
+    string GetCardClass()
+    {
+        if (Girando)  return "spinning";
+        if (Angulo == 45) return "angle-45";
+        return "";
+    }
+
+    RenderFragment FrontSvg => __builder =>
+    {
+        <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+            <ellipse cx="120" cy="511" rx="70" ry="9" fill="rgba(0,0,0,.13)"/>
+            <rect x="60" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
+            <rect x="132" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
+            <rect x="63" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
+            <rect x="135" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
+            <rect x="66" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
+            <rect x="139" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
+            @if (IsBermuda)
+            {
+                <rect x="58" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
+                <rect x="129" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
+                <rect x="58" y="265" width="124" height="38" rx="6" fill="@PantsColor"/>
+                <rect x="65" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
+                <rect x="137" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
+                <rect x="66" y="285" width="28" height="20" rx="3" fill="rgba(0,0,0,.12)"/>
+                <rect x="56" y="261" width="128" height="12" rx="5" fill="rgba(0,0,0,.18)"/>
+                <line x1="56" y1="267" x2="184" y2="267" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+            }
+            else if (IsCalca)
+            {
+                <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
+                <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
+                <rect x="106" y="256" width="18" height="18" rx="3" fill="#B8960C"/>
+                <rect x="112" y="262" width="6" height="6" rx="1" fill="#8B6914"/>
+            }
+            else
+            {
+                <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
+                <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
+                <rect x="106" y="256" width="18" height="18" rx="3" fill="#B8960C"/>
+                <rect x="112" y="262" width="6" height="6" rx="1" fill="#8B6914"/>
+            }
+            @if (IsColete)
+            {
+                <rect x="80" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
+                <rect x="130" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
+                <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+                <rect x="58" y="168" width="42" height="32" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
+                @((MarkupString)$"<text x='79' y='188' text-anchor='middle' font-size='8' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
+            }
+            else if (IsJaleco)
+            {
+                <path d="M55 150 L15 220 L42 230 L72 168 Z" fill="@ShirtColor"/>
+                <path d="M185 150 L225 220 L198 230 L168 168 Z" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="130" height="155" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="278" width="130" height="25" rx="0" fill="rgba(0,0,0,.08)"/>
+                <path d="M90 148 L75 165 L95 205 L120 210 L120 148 Z" fill="white" opacity=".9"/>
+                <path d="M150 148 L165 165 L145 205 L120 210 L120 148 Z" fill="white" opacity=".9"/>
+                <rect x="58" y="175" width="40" height="32" rx="4" fill="rgba(255,255,255,.25)" stroke="rgba(0,0,0,.15)" stroke-width="1"/>
+                @((MarkupString)"<text x='78' y='195' text-anchor='middle' font-size='7' fill='rgba(0,0,0,.5)' font-family='Arial,sans-serif'>bolso</text>")
+                <circle cx="120" cy="225" r="4" fill="rgba(255,255,255,.5)"/>
+                <circle cx="120" cy="245" r="4" fill="rgba(255,255,255,.5)"/>
+            }
+            else if (IsAgasalho)
+            {
+                <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="18" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
+                <rect x="200" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
+                <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(255,255,255,.4)" stroke-width="3"/>
+                <circle cx="120" cy="200" r="5" fill="rgba(0,0,0,.2)"/>
+                <path d="M88 148 L100 125 L120 120 L140 125 L152 148 Q140 142 120 140 Q100 142 88 148 Z" fill="@ShirtColor2"/>
+                <rect x="55" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
+                <rect x="167" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
+            }
+            else if (IsCamisaMalha)
+            {
+                <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
+                <ellipse cx="120" cy="148" rx="32" ry="12" fill="@ShirtColor"/>
+                <ellipse cx="120" cy="148" rx="28" ry="8" fill="rgba(0,0,0,.1)"/>
+                <rect x="58" y="168" width="40" height="30" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
+                @((MarkupString)$"<text x='78' y='187' text-anchor='middle' font-size='7' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
+            }
+            else
+            {
+                <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="238" width="130" height="30" rx="0" fill="rgba(0,0,0,.08)"/>
+                <path d="M88 148 L100 178 L120 180 L140 178 L152 148 Q140 132 120 130 Q100 132 88 148 Z" fill="white" opacity=".92"/>
+                <circle cx="120" cy="150" r="3.5" fill="rgba(0,0,0,.2)"/>
+                <circle cx="120" cy="163" r="3.5" fill="rgba(0,0,0,.2)"/>
+                <rect x="60" y="168" width="40" height="30" rx="4" fill="rgba(255,255,255,.18)" stroke="@LogoColor" stroke-width="1.5"/>
+                @((MarkupString)$"<text x='80' y='187' text-anchor='middle' font-size='7' fill='{LogoColor}' font-family='Arial,sans-serif' font-weight='bold'>LOGO</text>")
+            }
+            <rect x="106" y="117" width="28" height="24" rx="6" fill="@SkinColor"/>
+            @if (Feminino)
+            {
+                <circle cx="120" cy="74" r="50" fill="@SkinColor"/>
+                <path d="M70 70 Q68 18 120 15 Q172 18 170 70 Q162 32 120 30 Q78 32 70 70 Z" fill="#3D2B1A"/>
+                <ellipse cx="120" cy="30" rx="50" ry="19" fill="#3D2B1A"/>
+                <path d="M70 70 Q62 110 65 140 Q68 110 78 98 Z" fill="#3D2B1A"/>
+                <path d="M170 70 Q178 110 175 140 Q172 110 162 98 Z" fill="#3D2B1A"/>
+                <ellipse cx="70" cy="80" rx="8" ry="12" fill="@SkinColor"/>
+                <ellipse cx="170" cy="80" rx="8" ry="12" fill="@SkinColor"/>
+                <ellipse cx="103" cy="76" rx="11" ry="12" fill="white"/>
+                <ellipse cx="137" cy="76" rx="11" ry="12" fill="white"/>
+                <circle cx="105" cy="77" r="7" fill="#1A0D05"/>
+                <circle cx="139" cy="77" r="7" fill="#1A0D05"/>
+                <circle cx="102" cy="74" r="2.5" fill="white"/>
+                <circle cx="136" cy="74" r="2.5" fill="white"/>
+                <path d="M92 66 Q103 62 114 66" stroke="#1A0D05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M126 66 Q137 62 148 66" stroke="#1A0D05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M117 89 Q120 94 123 89" stroke="#C8806A" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <path d="M106 102 Q120 114 134 102" stroke="#C05050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="92" cy="88" rx="8" ry="5" fill="rgba(220,100,100,.15)"/>
+                <ellipse cx="148" cy="88" rx="8" ry="5" fill="rgba(220,100,100,.15)"/>
+            }
+            else
+            {
+                <circle cx="120" cy="75" r="51" fill="@SkinColor"/>
+                <path d="M69 72 Q72 20 120 17 Q168 20 171 72 Q162 38 120 36 Q78 38 69 72 Z" fill="#3D2B1A"/>
+                <ellipse cx="120" cy="32" rx="50" ry="18" fill="#3D2B1A"/>
+                <ellipse cx="69" cy="81" rx="9" ry="13" fill="@SkinColor"/>
+                <ellipse cx="171" cy="81" rx="9" ry="13" fill="@SkinColor"/>
+                <ellipse cx="102" cy="76" rx="11" ry="11" fill="white"/>
+                <ellipse cx="138" cy="76" rx="11" ry="11" fill="white"/>
+                <circle cx="104" cy="77" r="7" fill="#1A0D05"/>
+                <circle cx="140" cy="77" r="7" fill="#1A0D05"/>
+                <circle cx="101" cy="74" r="2.5" fill="white"/>
+                <circle cx="137" cy="74" r="2.5" fill="white"/>
+                <path d="M91 63 Q102 59 113 63" stroke="#3D2B1A" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M127 63 Q138 59 149 63" stroke="#3D2B1A" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M116 89 Q120 97 124 89" stroke="#C8806A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M103 103 Q120 118 137 103" stroke="#C06050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            }
+        </svg>
+    };
+
+    RenderFragment BackSvg => __builder =>
+    {
+        <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+            <ellipse cx="120" cy="511" rx="70" ry="9" fill="rgba(0,0,0,.13)"/>
+            <rect x="60" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
+            <rect x="132" y="441" width="48" height="17" rx="9" fill="@ShoesColor"/>
+            <rect x="63" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
+            <rect x="135" y="430" width="42" height="17" rx="4" fill="@ShoesColor"/>
+            <rect x="66" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
+            <rect x="139" y="412" width="35" height="22" rx="3" fill="#EFEFEF"/>
+            @if (IsBermuda)
+            {
+                <rect x="58" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
+                <rect x="129" y="265" width="53" height="115" rx="8" fill="@PantsColor"/>
+                <rect x="58" y="265" width="124" height="38" rx="6" fill="@PantsColor"/>
+                <rect x="65" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
+                <rect x="137" y="370" width="38" height="50" rx="5" fill="@SkinColor"/>
+                <rect x="56" y="261" width="128" height="12" rx="5" fill="rgba(0,0,0,.18)"/>
+            }
+            else
+            {
+                <rect x="58" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="129" y="265" width="53" height="170" rx="8" fill="@PantsColor"/>
+                <rect x="58" y="265" width="124" height="34" rx="6" fill="@PantsColor"/>
+                <rect x="55" y="258" width="130" height="14" rx="5" fill="rgba(0,0,0,.3)"/>
+            }
+            @if (IsJaleco)
+            {
+                <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="130" height="155" rx="6" fill="@ShirtColor"/>
+                <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.7)" stroke-width="9" fill="none" stroke-linecap="round"/>
+                <line x1="120" y1="148" x2="120" y2="303" stroke="rgba(0,0,0,.08)" stroke-width="1.5" stroke-dasharray="4,4"/>
+            }
+            else if (IsAgasalho)
+            {
+                <path d="M55 152 L12 222 L38 232 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 152 L228 222 L202 232 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="18" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
+                <rect x="200" y="224" width="22" height="14" rx="5" fill="@ShirtColor2"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
+                <rect x="167" y="148" width="18" height="120" rx="0" fill="@ShirtColor2" opacity=".6"/>
+                <path d="M88 148 Q120 138 152 148" stroke="@ShirtColor2" stroke-width="10" fill="none" stroke-linecap="round"/>
+            }
+            else if (IsColete)
+            {
+                <rect x="80" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
+                <rect x="130" y="150" width="30" height="22" rx="4" fill="@SkinColor"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+                <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.5)" stroke-width="8" fill="none" stroke-linecap="round"/>
+            }
+            else
+            {
+                <path d="M55 155 L18 218 L44 226 L68 172 Z" fill="@ShirtColor"/>
+                <path d="M185 155 L222 218 L196 226 L172 172 Z" fill="@ShirtColor"/>
+                <rect x="55" y="148" width="130" height="120" rx="6" fill="@ShirtColor"/>
+                <path d="M88 148 Q120 138 152 148" stroke="rgba(255,255,255,.6)" stroke-width="9" fill="none" stroke-linecap="round"/>
+                <line x1="120" y1="148" x2="120" y2="268" stroke="rgba(0,0,0,.07)" stroke-width="1.5" stroke-dasharray="4,4"/>
+            }
+            <rect x="106" y="117" width="28" height="26" rx="6" fill="@SkinColor"/>
+            @if (Feminino)
+            {
+                <circle cx="120" cy="74" r="50" fill="#3D2B1A"/>
+                <ellipse cx="120" cy="110" rx="25" ry="10" fill="@SkinColor"/>
+                <path d="M70 70 Q62 110 65 140 Q68 110 78 98 Z" fill="#3D2B1A"/>
+                <path d="M170 70 Q178 110 175 140 Q172 110 162 98 Z" fill="#3D2B1A"/>
+            }
+            else
+            {
+                <circle cx="120" cy="75" r="51" fill="#3D2B1A"/>
+                <ellipse cx="120" cy="113" rx="24" ry="10" fill="@SkinColor"/>
+            }
+            <ellipse cx="69" cy="81" rx="9" ry="13" fill="@SkinColor"/>
+            <ellipse cx="171" cy="81" rx="9" ry="13" fill="@SkinColor"/>
+        </svg>
+    };
 }
