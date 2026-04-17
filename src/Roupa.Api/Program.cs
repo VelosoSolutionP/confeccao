@@ -98,11 +98,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Endpoint temporário para testar conexão com Sentry — remover após verificação
-app.MapGet("/sentry-test", () =>
-{
-    SentrySdk.CaptureMessage("Hello Sentry — Roupa Solution API ok!");
-    return Results.Ok("Mensagem enviada ao Sentry.");
-}).AllowAnonymous();
+app.MapGet("/health", () => Results.Ok(new { status = "ok", ts = DateTime.UtcNow })).AllowAnonymous();
 
 app.Run();

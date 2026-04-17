@@ -6,474 +6,410 @@
 
 <PageTitle>Vitrine — Uniformes</PageTitle>
 
+<!-- Backdrop fecha os dropdowns ao clicar fora -->
+@if (empresaOpen || produtoOpen)
+{
+    <div class="vt-backdrop" @onclick="FecharDropdowns"></div>
+}
+
 <div class="vt-shell">
 
-    <!-- ══════════════════════ SIDEBAR FILTROS ══════════════════════ -->
-    <aside class="vt-sb">
-        <div class="vt-sb-brand">
-            <i class="bi bi-bag-heart-fill"></i>
-            <span>Vitrine</span>
-        </div>
+    <!-- ══ BARRA DE FILTROS (top) ══ -->
+    <div class="vt-topbar">
+        <span class="vt-topbar-brand"><i class="bi bi-bag-heart-fill"></i> Vitrine</span>
 
-        <!-- ── Empresa ── -->
-        <div class="vt-sb-sec">
-            <div class="vt-sb-sec-label"><i class="bi bi-buildings"></i> Empresa</div>
-            <div class="vt-sb-search">
-                <i class="bi bi-search"></i>
-                <input placeholder="Buscar empresa..." @bind="buscaCliente" @bind:event="oninput" />
-            </div>
-            <div class="vt-sb-list">
-                @if (!ClientesFiltrados().Any())
-                {
-                    <div class="vt-sb-vazio">Nenhuma empresa</div>
-                }
-                @foreach (var c in ClientesFiltrados())
-                {
-                    var cid = c.Id.ToString();
-                    var nome = string.IsNullOrEmpty(c.NomeFantasia) ? c.RazaoSocial : c.NomeFantasia;
-                    var ativo = filtroClienteId == cid;
-                    <button class="vt-sb-item @(ativo?"on":"")" @onclick="()=>SelecionarCliente(cid)">
-                        <div class="vt-sb-av" style="@(ativo?"background:var(--brand-600);color:#fff":"")">
-                            @(nome.Length > 0 ? nome[0].ToString().ToUpper() : "?")
-                        </div>
-                        <span class="vt-sb-item-nome">@nome</span>
-                        @if (ativo) { <i class="bi bi-check-circle-fill vt-sb-chk"></i> }
-                    </button>
-                }
-            </div>
-        </div>
-
-        <!-- ── Tipo de Produto ── -->
-        @if (!string.IsNullOrEmpty(filtroClienteId))
-        {
-            <div class="vt-sb-sec">
-                <div class="vt-sb-sec-label"><i class="bi bi-tag"></i> Tipo</div>
-                <div class="vt-sb-tipos">
-                    <button class="vt-sb-tipo-btn @(filtroTipo==""?"on":"")" @onclick="()=>filtroTipo=string.Empty">
-                        Todos
-                    </button>
-                    @foreach (var tp in TiposComProdutos())
-                    {
-                        var t = tp; var tv = ((int)t).ToString();
-                        <button class="vt-sb-tipo-btn @(filtroTipo==tv?"on":"")"
-                                style="@(filtroTipo==tv?$"background:{CorTipo(t)};color:#fff;border-color:{CorTipo(t)}":"")"
-                                @onclick="()=>filtroTipo=tv">
-                            @NomeTipo(t)
-                        </button>
-                    }
-                </div>
-            </div>
-
-            <div class="vt-sb-sec">
-                <div class="vt-sb-sec-label"><i class="bi bi-search"></i> Busca</div>
-                <div class="vt-sb-search">
-                    <i class="bi bi-search"></i>
-                    <input placeholder="Nome do modelo..." @bind="busca" @bind:event="oninput" />
-                </div>
-            </div>
-        }
-    </aside>
-
-    <!-- ══════════════════════ ÁREA PRINCIPAL ══════════════════════ -->
-    <div class="vt-main">
-
-        @if (string.IsNullOrEmpty(filtroClienteId))
-        {
-            <!-- Nenhuma empresa selecionada -->
-            <div class="vt-sem-empresa">
-                <div class="vt-sem-icon"><i class="bi bi-buildings"></i></div>
-                <h2>Selecione uma empresa</h2>
-                <p>Use o painel à esquerda para escolher a empresa e ver as fichas de uniformes</p>
-            </div>
-        }
-        else if (detalhe is null)
-        {
-            <!-- GRID DE CARDS 3D -->
-            <div class="vt-grid-area">
-                <div class="vt-grid-topbar">
-                    @{
-                        var total = ProdutosFiltrados().Count();
-                    }
-                    <span class="vt-grid-count">
-                        <b>@total</b> @(total == 1 ? "ficha" : "fichas")
-                        @if (!string.IsNullOrEmpty(filtroTipo) || !string.IsNullOrEmpty(busca))
+        <!-- Custom Select: Empresa -->
+        <div class="vt-cs @(empresaOpen?"open":"")">
+            <button class="vt-cs-btn" @onclick="()=>{empresaOpen=!empresaOpen;produtoOpen=false;buscaCliente=string.Empty;}">
+                <i class="bi bi-buildings"></i>
+                <span class="@(string.IsNullOrEmpty(filtroClienteId)?"vt-cs-placeholder":"")">
+                    @(EmpresaSelecionada() ?? "Selecione a empresa...")
+                </span>
+                <i class="bi bi-chevron-down vt-cs-arrow"></i>
+            </button>
+            @if (empresaOpen)
+            {
+                <div class="vt-cs-panel">
+                    <div class="vt-cs-search">
+                        <i class="bi bi-search"></i>
+                        <input placeholder="Buscar empresa..." @bind="buscaCliente"
+                               @bind:event="oninput" autofocus />
+                    </div>
+                    <div class="vt-cs-list">
+                        @foreach (var c in ClientesFiltrados())
                         {
-                            <button class="vt-limpar" @onclick="LimparFiltros" title="Limpar filtros">
-                                <i class="bi bi-x-circle"></i> limpar
+                            var cid = c.Id.ToString();
+                            var nome = string.IsNullOrEmpty(c.NomeFantasia) ? c.RazaoSocial : c.NomeFantasia;
+                            <button class="vt-cs-item @(filtroClienteId==cid?"on":"")"
+                                    @onclick="()=>SelecionarCliente(cid, nome)">
+                                <span class="vt-cs-av">@nome[0]</span>
+                                <span class="vt-cs-item-txt">@nome</span>
+                                @if (filtroClienteId==cid) { <i class="bi bi-check-lg vt-cs-chk"></i> }
                             </button>
                         }
-                    </span>
-                </div>
-
-                @if (carregando)
-                {
-                    <div class="vt-cards-grid">
-                        @for (var i = 0; i < 6; i++) {
-                            <div class="vt-sk-card3d"></div>
-                        }
-                    </div>
-                }
-                else if (!ProdutosFiltrados().Any())
-                {
-                    <div class="vt-grid-vazio">
-                        <i class="bi bi-bag-x"></i>
-                        <p>Nenhuma ficha encontrada</p>
-                        <button class="vt-btn-ghost" @onclick="LimparFiltros">Limpar filtros</button>
-                    </div>
-                }
-                else
-                {
-                    <div class="vt-cards-grid">
-                        @foreach (var p in ProdutosFiltrados())
+                        @if (!ClientesFiltrados().Any())
                         {
-                            var pp = p;
-                            var isAprov = aprovados.Contains(pp.Id);
-                            var primCor = CoresDisponiveis(pp).FirstOrDefault() ?? "";
-                            var primHex = CorHex(primCor);
-                            <div class="vt3d-card" @onclick="()=>SelecionarFicha(pp)">
-                                <div class="vt3d-inner @(isAprov?"aprov":"")">
-                                    <div class="vt3d-stripe" style="background:@CorTipo(pp.TipoProduto)"></div>
-
-                                    <!-- Mini manequim -->
-                                    <div class="vt3d-avatar">
-                                        <Personagem ShirtColor="@primHex" ShirtColor2="#111111"
-                                                    PantsColor="#1E3A5F" ShoesColor="#1A1A1A"
-                                                    LogoColor="@CorFg(primHex)" Feminino="@IsFeminino(pp.TipoProduto)"
-                                                    Angulo="0" Tipo="@pp.TipoProduto" />
-                                    </div>
-
-                                    <div class="vt3d-body">
-                                        <div class="vt3d-tipo" style="color:@CorTipo(pp.TipoProduto)">
-                                            @NomeTipo(pp.TipoProduto)
-                                        </div>
-                                        <div class="vt3d-nome">@pp.Modelo</div>
-                                        <div class="vt3d-cli"><i class="bi bi-buildings"></i> @pp.NomeCliente</div>
-                                        <div class="vt3d-cores">
-                                            @foreach (var cor in CoresDisponiveis(pp).Take(6))
-                                            {
-                                                <span class="vt-dot" title="@cor" style="background:@CorHex(cor)"></span>
-                                            }
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(pp.Tecido))
-                                        {
-                                            <div class="vt3d-tec"><i class="bi bi-layers"></i> @pp.Tecido</div>
-                                        }
-                                    </div>
-
-                                    @if (isAprov)
-                                    {
-                                        <div class="vt3d-aprov-badge">
-                                            <i class="bi bi-patch-check-fill"></i> Aprovado
-                                        </div>
-                                    }
-
-                                    <div class="vt3d-hover-tip">
-                                        <i class="bi bi-eye"></i> Ver ficha técnica
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="vt-cs-empty">Nenhuma empresa encontrada</div>
                         }
                     </div>
+                </div>
+            }
+        </div>
+
+        <!-- Custom Select: Produto (só depois de empresa) -->
+        @if (!string.IsNullOrEmpty(filtroClienteId))
+        {
+            <div class="vt-cs @(produtoOpen?"open":"")">
+                <button class="vt-cs-btn" @onclick="()=>{produtoOpen=!produtoOpen;empresaOpen=false;busca=string.Empty;}">
+                    <i class="bi bi-tag"></i>
+                    <span class="@(detalhe is null?"vt-cs-placeholder":"")">
+                        @(detalhe?.Modelo ?? "Todos os produtos")
+                    </span>
+                    <i class="bi bi-chevron-down vt-cs-arrow"></i>
+                </button>
+                @if (produtoOpen)
+                {
+                    <div class="vt-cs-panel">
+                        <div class="vt-cs-search">
+                            <i class="bi bi-search"></i>
+                            <input placeholder="Buscar produto..." @bind="busca"
+                                   @bind:event="oninput" autofocus />
+                        </div>
+                        <div class="vt-cs-list">
+                            <button class="vt-cs-item @(detalhe is null?"on":"")"
+                                    @onclick="()=>{detalhe=null;produtoOpen=false;}">
+                                <span class="vt-cs-av" style="background:var(--surface-400)">★</span>
+                                <span class="vt-cs-item-txt">Todos os produtos</span>
+                            </button>
+                            @foreach (var p in ProdutosFiltrados())
+                            {
+                                var pp = p;
+                                <button class="vt-cs-item @(detalhe?.Id==pp.Id?"on":"")"
+                                        @onclick="()=>SelecionarFicha(pp)">
+                                    <span class="vt-cs-dot" style="background:@CorTipo(pp.TipoProduto)"></span>
+                                    <span class="vt-cs-item-txt">
+                                        @pp.Modelo
+                                        <small>@NomeTipo(pp.TipoProduto)</small>
+                                    </span>
+                                    @if (detalhe?.Id==pp.Id) { <i class="bi bi-check-lg vt-cs-chk"></i> }
+                                </button>
+                            }
+                            @if (!ProdutosFiltrados().Any())
+                            {
+                                <div class="vt-cs-empty">Nenhum produto encontrado</div>
+                            }
+                        </div>
+                    </div>
                 }
+            </div>
+        }
+    </div>
+
+    <!-- ══ CONTEÚDO ══ -->
+    @if (string.IsNullOrEmpty(filtroClienteId))
+    {
+        <div class="vt-empty-state">
+            <i class="bi bi-buildings"></i>
+            <h3>Selecione uma empresa</h3>
+            <p>Use o filtro acima para escolher a empresa e visualizar as fichas de uniformes</p>
+        </div>
+    }
+    else if (detalhe is null)
+    {
+        <!-- GRID 3D -->
+        @if (carregando)
+        {
+            <div class="vt-cards-grid">
+                @for (var i = 0; i < 6; i++) { <div class="vt-sk-card"></div> }
+            </div>
+        }
+        else if (!ProdutosFiltrados().Any())
+        {
+            <div class="vt-empty-state">
+                <i class="bi bi-bag-x"></i>
+                <h3>Nenhuma ficha encontrada</h3>
             </div>
         }
         else
         {
-            <!-- ══ FICHA TÉCNICA DETALHADA ══ -->
-            <div class="vt-ft-shell">
-
-                <!-- Cabeçalho da ficha -->
-                <div class="vt-ft-header">
-                    <button class="vt-btn-voltar" @onclick="()=>detalhe=null">
-                        <i class="bi bi-arrow-left"></i> Voltar
-                    </button>
-                    <div class="vt-ft-titulo">
-                        <div class="vt-ft-tipo" style="color:@CorTipo(detalhe.TipoProduto)">
-                            @NomeTipo(detalhe.TipoProduto)
+            <div class="vt-cards-grid">
+                @foreach (var p in ProdutosFiltrados())
+                {
+                    var pp = p;
+                    var primHex = CorHex(CoresDisponiveis(pp).FirstOrDefault() ?? "");
+                    <div class="vt3d-card" @onclick="()=>SelecionarFicha(pp)">
+                        <div class="vt3d-inner">
+                            <div class="vt3d-stripe" style="background:@CorTipo(pp.TipoProduto)"></div>
+                            <div class="vt3d-avatar">
+                                <Personagem ShirtColor="@primHex" ShirtColor2="#111111"
+                                            PantsColor="#1E3A5F" ShoesColor="#1A1A1A"
+                                            LogoColor="@CorFg(primHex)"
+                                            Feminino="@IsFeminino(pp.TipoProduto)"
+                                            Angulo="0" Tipo="@pp.TipoProduto" />
+                            </div>
+                            <div class="vt3d-body">
+                                <div class="vt3d-tipo" style="color:@CorTipo(pp.TipoProduto)">@NomeTipo(pp.TipoProduto)</div>
+                                <div class="vt3d-nome">@pp.Modelo</div>
+                                <div class="vt3d-cli"><i class="bi bi-buildings"></i> @pp.NomeCliente</div>
+                                <div class="vt3d-cores">
+                                    @foreach (var cor in CoresDisponiveis(pp).Take(6))
+                                    { <span class="vt-dot" title="@cor" style="background:@CorHex(cor)"></span> }
+                                </div>
+                                @if (!string.IsNullOrEmpty(pp.Tecido))
+                                { <div class="vt3d-tec"><i class="bi bi-layers"></i> @pp.Tecido</div> }
+                            </div>
+                            @if (aprovados.Contains(pp.Id))
+                            {
+                                <div class="vt3d-aprov-badge"><i class="bi bi-patch-check-fill"></i> Aprovado</div>
+                            }
+                            <div class="vt3d-tip"><i class="bi bi-eye"></i> Ver ficha técnica</div>
                         </div>
-                        <h1 class="vt-ft-modelo">@detalhe.Modelo</h1>
-                        <div class="vt-ft-cli"><i class="bi bi-buildings"></i> @detalhe.NomeCliente</div>
                     </div>
-                    <div class="vt-ft-acoes">
-                        @if (aprovados.Contains(detalhe.Id))
-                        {
-                            <div class="vt-aprov-tag"><i class="bi bi-check-circle-fill"></i> Aprovado</div>
-                        }
-                        else
-                        {
-                            <button class="vt-btn-aprov" @onclick="AprovarFicha">
-                                <i class="bi bi-check-circle"></i> Aprovar ficha
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <!-- FICHA TÉCNICA DETALHADA -->
+        <div class="vt-detail">
+
+            <!-- Header da ficha -->
+            <div class="vt-detail-hd">
+                <div class="vt-detail-hd-info">
+                    <div class="vt-detail-tipo" style="color:@CorTipo(detalhe.TipoProduto)">
+                        @NomeTipo(detalhe.TipoProduto)
+                    </div>
+                    <h2 class="vt-detail-modelo">@detalhe.Modelo</h2>
+                    <div class="vt-detail-cli"><i class="bi bi-buildings"></i> @detalhe.NomeCliente</div>
+                </div>
+                <div class="vt-detail-hd-acoes">
+                    @if (aprovados.Contains(detalhe.Id))
+                    {
+                        <div class="vt-aprov-tag"><i class="bi bi-check-circle-fill"></i> Aprovado</div>
+                    }
+                    else
+                    {
+                        <button class="vt-btn-aprov" @onclick="AprovarFicha">
+                            <i class="bi bi-check-circle"></i> Aprovar ficha
+                        </button>
+                    }
+                    <button class="vt-btn-print" @onclick="ImprimirProposta" title="Imprimir">
+                        <i class="bi bi-printer-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo: manequim + specs -->
+            <div class="vt-detail-body">
+
+                <!-- Manequim -->
+                <div class="vt-man-col">
+                    <div class="vt-man-top">
+                        <div class="vit2-gen-toggle">
+                            <button class="@(!feminino?"ativo":"")" @onclick="()=>feminino=false" title="Masculino">
+                                <i class="bi bi-gender-male"></i>
                             </button>
-                        }
-                        <button class="vt-btn-print" @onclick="ImprimirProposta" title="Imprimir">
-                            <i class="bi bi-printer-fill"></i>
+                            <button class="@(feminino?"ativo":"")" @onclick="()=>feminino=true" title="Feminino">
+                                <i class="bi bi-gender-female"></i>
+                            </button>
+                        </div>
+                        <span class="vt-tam-lbl">Tam: <b>@tamanhoAtual</b></span>
+                    </div>
+
+                    <div class="vt-svg-wrap">
+                        <Personagem ShirtColor="@shirtHex" ShirtColor2="@shirt2Hex"
+                                    PantsColor="@pantsHex" ShoesColor="@shoesHex"
+                                    LogoColor="@logoHex" Feminino="@feminino"
+                                    Angulo="@angulo" Tipo="@detalhe.TipoProduto" />
+                    </div>
+
+                    <div class="vt-angles">
+                        <button class="vt-ang @(angulo==0?"on":"")"   @onclick="()=>angulo=0">0°</button>
+                        <button class="vt-ang @(angulo==45?"on":"")"  @onclick="()=>angulo=45">45°</button>
+                        <button class="vt-ang @(angulo==90?"on":"")"  @onclick="()=>angulo=90">90°</button>
+                        <button class="vt-ang @(angulo==180?"on":"")" @onclick="()=>angulo=180">180°</button>
+                        <button class="vt-ang @(angulo==360?"on":"")" @onclick="()=>angulo=360">
+                            <i class="bi bi-arrow-repeat @(angulo==360?"spin-icon":"")"></i>
                         </button>
                     </div>
-                </div>
 
-                <!-- Corpo: manequim + specs -->
-                <div class="vt-ft-body">
-
-                    <!-- Coluna manequim -->
-                    <div class="vt-man">
-                        <div class="vt-man-top">
-                            <div class="vit2-gen-toggle">
-                                <button class="@(!feminino?"ativo":"")" @onclick="()=>feminino=false" title="Masculino">
-                                    <i class="bi bi-gender-male"></i>
-                                </button>
-                                <button class="@(feminino?"ativo":"")" @onclick="()=>feminino=true" title="Feminino">
-                                    <i class="bi bi-gender-female"></i>
-                                </button>
-                            </div>
-                            <span class="vt-tam-lbl">Tam: <b>@tamanhoAtual</b></span>
-                        </div>
-
-                        <div class="vt-svg-wrap">
-                            <Personagem ShirtColor="@shirtHex" ShirtColor2="@shirt2Hex"
-                                        PantsColor="@pantsHex" ShoesColor="@shoesHex"
-                                        LogoColor="@logoHex" Feminino="@feminino"
-                                        Angulo="@angulo" Tipo="@detalhe.TipoProduto" />
-                        </div>
-
-                        <div class="vt-angles">
-                            <button class="vt-ang @(angulo==0?"on":"")"   @onclick="()=>angulo=0">0°</button>
-                            <button class="vt-ang @(angulo==45?"on":"")"  @onclick="()=>angulo=45">45°</button>
-                            <button class="vt-ang @(angulo==90?"on":"")"  @onclick="()=>angulo=90">90°</button>
-                            <button class="vt-ang @(angulo==180?"on":"")" @onclick="()=>angulo=180">180°</button>
-                            <button class="vt-ang @(angulo==360?"on":"")" @onclick="()=>angulo=360">
-                                <i class="bi bi-arrow-repeat @(angulo==360?"spin-icon":"")"></i>
-                            </button>
-                        </div>
-
-                        <!-- Swatches de cor -->
-                        <div class="vt-cores">
-                            <div class="vt-cor-blk">
-                                <div class="vt-cor-lbl">@NomePeca(detalhe.TipoProduto)</div>
-                                <div class="vt-swatches">
-                                    @foreach (var cor in CoresDisponiveis(detalhe))
-                                    {
-                                        var c = cor; var h = CorHex(c);
-                                        <button class="vt-sw @(corPrincipalNome==c?"on":"")"
-                                                style="background:@h" title="@c"
-                                                @onclick="()=>SetCorPrincipal(c)">
-                                            @if (corPrincipalNome==c){<i class="bi bi-check-lg" style="color:@CorFg(h)"></i>}
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-
-                            @if (detalhe.TipoProduto == Models.TipoProduto.Agasalho)
-                            {
-                                <div class="vt-cor-blk">
-                                    <div class="vt-cor-lbl">Detalhe/Faixa</div>
-                                    <div class="vt-swatches">
-                                        @foreach (var cor in CoresCalca)
-                                        {
-                                            var c=cor.Nome; var h=cor.Hex;
-                                            <button class="vt-sw @(shirt2Nome==c?"on":"")"
-                                                    style="background:@h" title="@c"
-                                                    @onclick="()=>{shirt2Nome=c;shirt2Hex=h;}">
-                                                @if(shirt2Nome==c){<i class="bi bi-check-lg" style="color:@CorFg(h)"></i>}
-                                            </button>
-                                        }
-                                    </div>
-                                </div>
-                            }
-
-                            @if (MostraCalca)
-                            {
-                                <div class="vt-cor-blk">
-                                    <div class="vt-cor-lbl">Calça</div>
-                                    <div class="vt-swatches">
-                                        @foreach (var cor in CoresCalca)
-                                        {
-                                            var c=cor.Nome; var h=cor.Hex;
-                                            <button class="vt-sw @(pantsNome==c?"on":"")"
-                                                    style="background:@h" title="@c"
-                                                    @onclick="()=>{pantsNome=c;pantsHex=h;}">
-                                                @if(pantsNome==c){<i class="bi bi-check-lg" style="color:@CorFg(h)"></i>}
-                                            </button>
-                                        }
-                                    </div>
-                                </div>
-                            }
-
-                            <div class="vt-cor-blk">
-                                <div class="vt-cor-lbl">Calçado</div>
-                                <div class="vt-swatches">
-                                    @foreach (var cor in CoresSapato)
-                                    {
-                                        var c=cor.Nome; var h=cor.Hex;
-                                        <button class="vt-sw @(shoesNome==c?"on":"")"
-                                                style="background:@h" title="@c"
-                                                @onclick="()=>{shoesNome=c;shoesHex=h;}">
-                                            @if(shoesNome==c){<i class="bi bi-check-lg" style="color:@CorFg(h)"></i>}
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Coluna specs (scrollável) -->
-                    <div class="vt-specs">
-
-                        <!-- Tamanhos -->
-                        <div class="vt-blk">
-                            <div class="vt-blk-title"><i class="bi bi-rulers"></i> Tamanhos Disponíveis</div>
-                            <div class="vt-tam-grid">
-                                @foreach (var tam in Tamanhos)
+                    <div class="vt-cores">
+                        <div class="vt-cor-blk">
+                            <div class="vt-cor-lbl">@NomePeca(detalhe.TipoProduto)</div>
+                            <div class="vt-swatches">
+                                @foreach (var cor in CoresDisponiveis(detalhe))
                                 {
-                                    var t = tam;
-                                    <button class="vt-tam @(tamanhoAtual==t?"on":"")" @onclick="()=>tamanhoAtual=t">
-                                        <span class="vt-tam-code">@t</span>
-                                        <span class="vt-tam-sub">@LabelTamanho(t)</span>
+                                    var c = cor; var h = CorHex(c);
+                                    <button class="vt-sw @(corPrincipalNome==c?"on":"")"
+                                            style="background:@h" title="@c"
+                                            @onclick="()=>SetCorPrincipal(c)">
+                                        @if (corPrincipalNome==c) { <i class="bi bi-check-lg" style="color:@CorFg(h)"></i> }
                                     </button>
                                 }
                             </div>
                         </div>
-
-                        <!-- Material -->
-                        <div class="vt-blk">
-                            <div class="vt-blk-title"><i class="bi bi-layers-fill"></i> Material de Fabricação</div>
-                            <div class="vt-material-card">
-                                <div class="vt-material-nome">@detalhe.Tecido</div>
-                                @if (!string.IsNullOrEmpty(detalhe.Descricao))
-                                {
-                                    <div class="vt-material-desc">@detalhe.Descricao</div>
-                                }
-                                <div class="vt-material-props">
-                                    @foreach (var prop in PropriedadesTecido(detalhe.Tecido))
-                                    {
-                                        <span class="vt-material-tag"><i class="bi @prop.Icon"></i> @prop.Label</span>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Opções da peça -->
-                        @if (!string.IsNullOrWhiteSpace(detalhe.Opcoes))
+                        @if (detalhe.TipoProduto == Models.TipoProduto.Agasalho)
                         {
-                            <div class="vt-blk">
-                                <div class="vt-blk-title"><i class="bi bi-sliders2"></i> Características da Peça</div>
-                                <div class="vt-material-props">
-                                    @foreach (var opc in detalhe.Opcoes!.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            <div class="vt-cor-blk">
+                                <div class="vt-cor-lbl">Detalhe/Faixa</div>
+                                <div class="vt-swatches">
+                                    @foreach (var cor in CoresCalca)
                                     {
-                                        var (ico, lbl) = opc.Trim() switch
-                                        {
-                                            "ComBolso" => ("bi-bag", "Com Bolso"),
-                                            "ComCapuz" => ("bi-cloud-rain", "Com Capuz"),
-                                            "ComZiper" => ("bi-lightning-charge", "Com Zíper"),
-                                            _ => ("bi-check-circle", opc.Trim())
-                                        };
-                                        <span class="vt-material-tag"><i class="bi @ico"></i> @lbl</span>
+                                        var c=cor.Nome; var h=cor.Hex;
+                                        <button class="vt-sw @(shirt2Nome==c?"on":"")" style="background:@h" title="@c"
+                                                @onclick="()=>{shirt2Nome=c;shirt2Hex=h;}">
+                                            @if (shirt2Nome==c) { <i class="bi bi-check-lg" style="color:@CorFg(h)"></i> }
+                                        </button>
                                     }
                                 </div>
                             </div>
                         }
-
-                        <!-- Cuidados -->
-                        <div class="vt-blk">
-                            <div class="vt-blk-title"><i class="bi bi-droplet-half"></i> Cuidados de Conservação</div>
-                            <div class="vt-cuidados-grid">
-                                @{ var cui = InfoCuidados(detalhe!.Tecido); }
-                                <div class="vt-cui">
-                                    <div class="vt-cui-ico">@cui.Lavagem</div>
-                                    <div class="vt-cui-info">
-                                        <strong>Lavagem</strong>
-                                        <span>@cui.LavagemLabel</span>
-                                    </div>
-                                </div>
-                                <div class="vt-cui @(!cui.SecadoraOk?"no":"")">
-                                    <div class="vt-cui-ico">@(cui.SecadoraOk?"●✓":"●✗")</div>
-                                    <div class="vt-cui-info">
-                                        <strong>Secadora</strong>
-                                        <span>@(cui.SecadoraOk?"Permitido":"Não usar")</span>
-                                    </div>
-                                </div>
-                                <div class="vt-cui">
-                                    <div class="vt-cui-ico">@cui.Ferro</div>
-                                    <div class="vt-cui-info">
-                                        <strong>Ferro de passar</strong>
-                                        <span>@cui.FerroLabel</span>
-                                    </div>
-                                </div>
-                                <div class="vt-cui no">
-                                    <div class="vt-cui-ico">△✗</div>
-                                    <div class="vt-cui-info">
-                                        <strong>Alvejante</strong>
-                                        <span>Não usar</span>
-                                    </div>
-                                </div>
-                                <div class="vt-cui no">
-                                    <div class="vt-cui-ico">○✗</div>
-                                    <div class="vt-cui-info">
-                                        <strong>Limpeza a seco</strong>
-                                        <span>Não recomendado</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Logomarca -->
-                        <div class="vt-blk">
-                            <div class="vt-blk-title"><i class="bi bi-badge-tm-fill"></i> Logomarca / Personalização</div>
-                            <div class="vt-logo-grid">
-                                <div class="vt-logo-item">
-                                    <span>Tipo de aplicação</span>
-                                    <strong>@NomeLogomarca(detalhe.TipoLogomarca)</strong>
-                                </div>
-                                @if (!string.IsNullOrEmpty(detalhe.PosicaoLogomarca))
-                                {
-                                    <div class="vt-logo-item">
-                                        <span>Posição</span>
-                                        <strong>@detalhe.PosicaoLogomarca</strong>
-                                    </div>
-                                }
-                                @if (!string.IsNullOrEmpty(detalhe.TamanhoLogomarca))
-                                {
-                                    <div class="vt-logo-item">
-                                        <span>Tamanho da logo</span>
-                                        <strong>@detalhe.TamanhoLogomarca</strong>
-                                    </div>
-                                }
-                                @if (!string.IsNullOrEmpty(detalhe.CorLogomarca))
-                                {
-                                    <div class="vt-logo-item">
-                                        <span>Cor da logo</span>
-                                        <strong>@detalhe.CorLogomarca</strong>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-
-                        <!-- Cores disponíveis -->
-                        <div class="vt-blk">
-                            <div class="vt-blk-title"><i class="bi bi-palette-fill"></i> Cores Disponíveis da Peça</div>
-                            <div class="vt-cores-lista">
-                                @foreach (var cor in CoresDisponiveis(detalhe))
-                                {
-                                    var h = CorHex(cor);
-                                    <div class="vt-cor-tag" style="border-color:@h">
-                                        <span class="vt-cor-ball" style="background:@h"></span>
-                                        @cor
-                                    </div>
-                                }
-                            </div>
-                        </div>
-
-                        @if (!string.IsNullOrWhiteSpace(detalhe.Outros))
+                        @if (MostraCalca)
                         {
-                            <div class="vt-blk">
-                                <div class="vt-blk-title"><i class="bi bi-info-circle-fill"></i> Observações Técnicas</div>
-                                <div class="vt-obs">@detalhe.Outros</div>
+                            <div class="vt-cor-blk">
+                                <div class="vt-cor-lbl">Calça</div>
+                                <div class="vt-swatches">
+                                    @foreach (var cor in CoresCalca)
+                                    {
+                                        var c=cor.Nome; var h=cor.Hex;
+                                        <button class="vt-sw @(pantsNome==c?"on":"")" style="background:@h" title="@c"
+                                                @onclick="()=>{pantsNome=c;pantsHex=h;}">
+                                            @if (pantsNome==c) { <i class="bi bi-check-lg" style="color:@CorFg(h)"></i> }
+                                        </button>
+                                    }
+                                </div>
                             </div>
                         }
+                        <div class="vt-cor-blk">
+                            <div class="vt-cor-lbl">Calçado</div>
+                            <div class="vt-swatches">
+                                @foreach (var cor in CoresSapato)
+                                {
+                                    var c=cor.Nome; var h=cor.Hex;
+                                    <button class="vt-sw @(shoesNome==c?"on":"")" style="background:@h" title="@c"
+                                            @onclick="()=>{shoesNome=c;shoesHex=h;}">
+                                        @if (shoesNome==c) { <i class="bi bi-check-lg" style="color:@CorFg(h)"></i> }
+                                    </button>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Ficha técnica (specs) -->
+                <div class="vt-spec-col">
+
+                    <div class="vt-blk">
+                        <div class="vt-blk-title"><i class="bi bi-rulers"></i> Tamanhos Disponíveis</div>
+                        <div class="vt-tam-grid">
+                            @foreach (var tam in Tamanhos)
+                            {
+                                var t = tam;
+                                <button class="vt-tam @(tamanhoAtual==t?"on":"")" @onclick="()=>tamanhoAtual=t">
+                                    <span class="vt-tam-code">@t</span>
+                                    <span class="vt-tam-sub">@LabelTamanho(t)</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="vt-blk">
+                        <div class="vt-blk-title"><i class="bi bi-layers-fill"></i> Material de Fabricação</div>
+                        <div class="vt-material-card">
+                            <div class="vt-material-nome">@detalhe.Tecido</div>
+                            @if (!string.IsNullOrEmpty(detalhe.Descricao))
+                            { <div class="vt-material-desc">@detalhe.Descricao</div> }
+                            <div class="vt-material-props">
+                                @foreach (var prop in PropriedadesTecido(detalhe.Tecido))
+                                { <span class="vt-material-tag"><i class="bi @prop.Icon"></i> @prop.Label</span> }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(detalhe.Opcoes))
+                    {
+                        <div class="vt-blk">
+                            <div class="vt-blk-title"><i class="bi bi-sliders2"></i> Características da Peça</div>
+                            <div class="vt-material-props">
+                                @foreach (var opc in detalhe.Opcoes!.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    var (ico, lbl) = opc.Trim() switch {
+                                        "ComBolso" => ("bi-bag","Com Bolso"),
+                                        "ComCapuz" => ("bi-cloud-rain","Com Capuz"),
+                                        "ComZiper" => ("bi-lightning-charge","Com Zíper"),
+                                        _ => ("bi-check-circle", opc.Trim())
+                                    };
+                                    <span class="vt-material-tag"><i class="bi @ico"></i> @lbl</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="vt-blk">
+                        <div class="vt-blk-title"><i class="bi bi-droplet-half"></i> Cuidados de Conservação</div>
+                        <div class="vt-cuidados-grid">
+                            @{ var cui = InfoCuidados(detalhe!.Tecido); }
+                            <div class="vt-cui">
+                                <div class="vt-cui-ico">@cui.Lavagem</div>
+                                <div class="vt-cui-info"><strong>Lavagem</strong><span>@cui.LavagemLabel</span></div>
+                            </div>
+                            <div class="vt-cui @(!cui.SecadoraOk?"no":"")">
+                                <div class="vt-cui-ico">@(cui.SecadoraOk?"●✓":"●✗")</div>
+                                <div class="vt-cui-info"><strong>Secadora</strong><span>@(cui.SecadoraOk?"Permitido":"Não usar")</span></div>
+                            </div>
+                            <div class="vt-cui">
+                                <div class="vt-cui-ico">@cui.Ferro</div>
+                                <div class="vt-cui-info"><strong>Ferro</strong><span>@cui.FerroLabel</span></div>
+                            </div>
+                            <div class="vt-cui no">
+                                <div class="vt-cui-ico">△✗</div>
+                                <div class="vt-cui-info"><strong>Alvejante</strong><span>Não usar</span></div>
+                            </div>
+                            <div class="vt-cui no">
+                                <div class="vt-cui-ico">○✗</div>
+                                <div class="vt-cui-info"><strong>Limpeza seco</strong><span>Não recomendado</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vt-blk">
+                        <div class="vt-blk-title"><i class="bi bi-badge-tm-fill"></i> Logomarca / Personalização</div>
+                        <div class="vt-logo-grid">
+                            <div class="vt-logo-item"><span>Aplicação</span><strong>@NomeLogomarca(detalhe.TipoLogomarca)</strong></div>
+                            @if (!string.IsNullOrEmpty(detalhe.PosicaoLogomarca))
+                            { <div class="vt-logo-item"><span>Posição</span><strong>@detalhe.PosicaoLogomarca</strong></div> }
+                            @if (!string.IsNullOrEmpty(detalhe.TamanhoLogomarca))
+                            { <div class="vt-logo-item"><span>Tamanho</span><strong>@detalhe.TamanhoLogomarca</strong></div> }
+                            @if (!string.IsNullOrEmpty(detalhe.CorLogomarca))
+                            { <div class="vt-logo-item"><span>Cor</span><strong>@detalhe.CorLogomarca</strong></div> }
+                        </div>
+                    </div>
+
+                    <div class="vt-blk">
+                        <div class="vt-blk-title"><i class="bi bi-palette-fill"></i> Cores Disponíveis</div>
+                        <div class="vt-cores-lista">
+                            @foreach (var cor in CoresDisponiveis(detalhe))
+                            {
+                                var h = CorHex(cor);
+                                <div class="vt-cor-tag" style="border-color:@h">
+                                    <span class="vt-cor-ball" style="background:@h"></span>@cor
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(detalhe.Outros))
+                    {
+                        <div class="vt-blk">
+                            <div class="vt-blk-title"><i class="bi bi-info-circle-fill"></i> Observações</div>
+                            <div class="vt-obs">@detalhe.Outros</div>
+                        </div>
+                    }
+                </div>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>
 
 <!-- PRINT -->
@@ -487,9 +423,8 @@
         </div>
         <div class="proposta-body">
             <div style="width:180px;height:270px">
-                <Personagem ShirtColor="@shirtHex" ShirtColor2="@shirt2Hex"
-                            PantsColor="@pantsHex" ShoesColor="@shoesHex"
-                            LogoColor="@logoHex" Feminino="@feminino"
+                <Personagem ShirtColor="@shirtHex" ShirtColor2="@shirt2Hex" PantsColor="@pantsHex"
+                            ShoesColor="@shoesHex" LogoColor="@logoHex" Feminino="@feminino"
                             Angulo="0" Tipo="@detalhe.TipoProduto" />
             </div>
             <div class="proposta-detalhes">
@@ -514,17 +449,16 @@
 @code {
     record CorOpc(string Nome, string Hex);
     record PropTecido(string Icon, string Label);
+    record InfoCuidado(string Lavagem, string LavagemLabel, string Ferro, string FerroLabel, bool SecadoraOk);
 
-    static readonly CorOpc[] CoresCalca =
-    [
+    static readonly CorOpc[] CoresCalca = [
         new("Azul Marinho","#1E3A5F"), new("Preto","#111111"),
         new("Cinza","#6B7280"),        new("Cáqui","#C5A55A"),
         new("Marrom","#92400E"),       new("Branco","#F5F5F5"),
     ];
-    static readonly CorOpc[] CoresSapato =
-    [
+    static readonly CorOpc[] CoresSapato = [
         new("Preto","#1A1A1A"), new("Marrom","#7C4E28"),
-        new("Branco","#F0F0F0"),new("Cinza","#808080"),
+        new("Branco","#F0F0F0"), new("Cinza","#808080"),
         new("Caramelo","#C87941"),
     ];
     static readonly string[] Tamanhos = ["PP","P","M","G","GG","EG","EGG"];
@@ -535,20 +469,24 @@
     HashSet<Guid>           aprovados = [];
     bool carregando = true;
 
-    string busca = "", buscaCliente = "", filtroClienteId = "", filtroTipo = "";
+    // filtros
+    string busca = "", buscaCliente = "", filtroClienteId = "";
+    string nomeEmpresaSel = "";
+    bool empresaOpen, produtoOpen;
+
+    // manequim
     bool   feminino = false;
     int    angulo   = 0;
     string tamanhoAtual = "M";
-
     string corPrincipalNome = "";
-    string shirtHex  = "#DC2626";
-    string shirt2Nome = "Preto";        string shirt2Hex = "#111111";
-    string pantsNome  = "Azul Marinho"; string pantsHex  = "#1E3A5F";
-    string shoesNome  = "Preto";        string shoesHex  = "#1A1A1A";
-    string logoHex    = "#FFFFFF";
+    string shirtHex="#DC2626", shirt2Nome="Preto", shirt2Hex="#111111";
+    string pantsNome="Azul Marinho", pantsHex="#1E3A5F";
+    string shoesNome="Preto", shoesHex="#1A1A1A", logoHex="#FFFFFF";
 
-    bool EhPecaBottom => detalhe?.TipoProduto is Models.TipoProduto.Bermuda or Models.TipoProduto.Calca or Models.TipoProduto.CalcaLegging or Models.TipoProduto.Saia or Models.TipoProduto.Shorts;
-    bool MostraCalca  => detalhe is not null && !EhPecaBottom;
+    bool EhPecaBottom => detalhe?.TipoProduto is
+        Models.TipoProduto.Bermuda or Models.TipoProduto.Calca or
+        Models.TipoProduto.CalcaLegging or Models.TipoProduto.Saia or Models.TipoProduto.Shorts;
+    bool MostraCalca => detalhe is not null && !EhPecaBottom;
 
     protected override async Task OnInitializedAsync()
     {
@@ -560,50 +498,41 @@
         carregando = false;
     }
 
+    string? EmpresaSelecionada() => string.IsNullOrEmpty(filtroClienteId) ? null : nomeEmpresaSel;
+
     IEnumerable<Models.ClienteDto> ClientesFiltrados() =>
         string.IsNullOrWhiteSpace(buscaCliente)
             ? clientes
-            : clientes.Where(c =>
-                (c.NomeFantasia ?? c.RazaoSocial).Contains(buscaCliente, StringComparison.OrdinalIgnoreCase));
-
-    IEnumerable<Models.TipoProduto> TiposComProdutos()
-    {
-        if (string.IsNullOrEmpty(filtroClienteId)) return [];
-        if (!Guid.TryParse(filtroClienteId, out var cid)) return [];
-        return produtos.Where(p => p.ClienteId == cid)
-                       .Select(p => p.TipoProduto)
-                       .Distinct()
-                       .OrderBy(t => (int)t);
-    }
+            : clientes.Where(c => (c.NomeFantasia ?? c.RazaoSocial ?? "")
+                .Contains(buscaCliente, StringComparison.OrdinalIgnoreCase));
 
     IEnumerable<Models.LayoutDto> ProdutosFiltrados()
     {
         var q = produtos.AsEnumerable();
-        if (!string.IsNullOrWhiteSpace(filtroClienteId) && Guid.TryParse(filtroClienteId, out var cid))
+        if (Guid.TryParse(filtroClienteId, out var cid))
             q = q.Where(p => p.ClienteId == cid);
-        if (!string.IsNullOrWhiteSpace(filtroTipo) && int.TryParse(filtroTipo, out var tp))
-            q = q.Where(p => (int)p.TipoProduto == tp);
         if (!string.IsNullOrWhiteSpace(busca))
             q = q.Where(p => p.Modelo.Contains(busca, StringComparison.OrdinalIgnoreCase));
         return q;
     }
 
-    void SelecionarCliente(string cid)
-    {
-        filtroClienteId = cid; filtroTipo = ""; busca = ""; detalhe = null;
-    }
+    void FecharDropdowns() { empresaOpen = false; produtoOpen = false; }
 
-    void LimparFiltros() { filtroTipo = ""; busca = ""; }
+    void SelecionarCliente(string cid, string nome)
+    {
+        filtroClienteId = cid; nomeEmpresaSel = nome;
+        detalhe = null; busca = ""; empresaOpen = false;
+    }
 
     void SelecionarFicha(Models.LayoutDto p)
     {
-        angulo = 0; detalhe = p; tamanhoAtual = "M";
+        detalhe = p; angulo = 0; tamanhoAtual = "M"; produtoOpen = false;
         var cores = CoresDisponiveis(p);
         corPrincipalNome = cores.FirstOrDefault() ?? "";
         SetCorPrincipal(corPrincipalNome);
-        shirt2Nome="Preto";shirt2Hex="#111111";
-        pantsNome="Azul Marinho";pantsHex="#1E3A5F";
-        shoesNome="Preto";shoesHex="#1A1A1A";logoHex="#FFFFFF";
+        shirt2Nome="Preto"; shirt2Hex="#111111";
+        pantsNome="Azul Marinho"; pantsHex="#1E3A5F";
+        shoesNome="Preto"; shoesHex="#1A1A1A"; logoHex="#FFFFFF";
     }
 
     void AprovarFicha()
@@ -622,8 +551,6 @@
         if (EhPecaBottom) pantsHex = hex; else shirtHex = hex;
     }
 
-    record InfoCuidado(string Lavagem, string LavagemLabel, string Ferro, string FerroLabel, bool SecadoraOk);
-
     static InfoCuidado InfoCuidados(string tecido)
     {
         var t = tecido.ToLower();
@@ -640,7 +567,7 @@
     {
         var t = tecido.ToLower(); var r = new List<PropTecido>();
         if (t.Contains("algodão") || t.Contains("cotton")) r.Add(new("bi-wind","Respirável"));
-        if (t.Contains("poliéster") || t.Contains("dry")) r.Add(new("bi-moisture","Dry-fit"));
+        if (t.Contains("poliéster") || t.Contains("dry"))  r.Add(new("bi-moisture","Dry-fit"));
         if (t.Contains("elastano") || t.Contains("lycra")) r.Add(new("bi-arrows-fullscreen","Elastano"));
         if (t.Contains("linho")) r.Add(new("bi-sun","Leveza"));
         if (t.Contains("malha")) r.Add(new("bi-grid-3x3","Malha"));
@@ -649,42 +576,27 @@
         return r;
     }
 
-    static string LabelTamanho(string tam) => tam switch
-    {
-        "PP" => "Muito Peq.", "P" => "Pequeno", "M" => "Médio",
-        "G"  => "Grande",    "GG"=> "Muito Gr.","EG"=> "Extra G.",
-        "EGG"=> "2x Extra",  _   => ""
+    static string LabelTamanho(string tam) => tam switch {
+        "PP"=>"Muito Peq.","P"=>"Pequeno","M"=>"Médio",
+        "G"=>"Grande","GG"=>"Muito Gr.","EG"=>"Extra G.","EGG"=>"2x Extra",_=>""
     };
-
     static bool IsFeminino(Models.TipoProduto t) =>
         t is Models.TipoProduto.Vestido or Models.TipoProduto.CalcaLegging
           or Models.TipoProduto.Saia or Models.TipoProduto.Macacao
           or Models.TipoProduto.BlusaFeminina or Models.TipoProduto.Shorts;
-
-    static string CorTipo(Models.TipoProduto t) => t switch
-    {
-        Models.TipoProduto.CamisaPolo   => "#6366F1",
-        Models.TipoProduto.CamisaMalha  => "#0EA5E9",
-        Models.TipoProduto.Jaleco       => "#10B981",
-        Models.TipoProduto.Calca        => "#F59E0B",
-        Models.TipoProduto.Bermuda      => "#F97316",
-        Models.TipoProduto.Agasalho     => "#8B5CF6",
-        Models.TipoProduto.Colete       => "#EC4899",
-        Models.TipoProduto.Vestido      => "#F43F5E",
-        Models.TipoProduto.CalcaLegging => "#A855F7",
-        Models.TipoProduto.Saia         => "#E879F9",
-        Models.TipoProduto.Macacao      => "#D946EF",
-        Models.TipoProduto.BlusaFeminina=> "#FB7185",
-        Models.TipoProduto.Shorts       => "#F472B6",
-        _ => "#6B7280"
+    static string CorTipo(Models.TipoProduto t) => t switch {
+        Models.TipoProduto.CamisaPolo=>"#6366F1", Models.TipoProduto.CamisaMalha=>"#0EA5E9",
+        Models.TipoProduto.Jaleco=>"#10B981",    Models.TipoProduto.Calca=>"#F59E0B",
+        Models.TipoProduto.Bermuda=>"#F97316",   Models.TipoProduto.Agasalho=>"#8B5CF6",
+        Models.TipoProduto.Colete=>"#EC4899",    Models.TipoProduto.Vestido=>"#F43F5E",
+        Models.TipoProduto.CalcaLegging=>"#A855F7", Models.TipoProduto.Saia=>"#E879F9",
+        Models.TipoProduto.Macacao=>"#D946EF",   Models.TipoProduto.BlusaFeminina=>"#FB7185",
+        Models.TipoProduto.Shorts=>"#F472B6",    _=>"#6B7280"
     };
-
     static List<string> CoresDisponiveis(Models.LayoutDto p) =>
         p.Cores.Split([" e "," & ",","," / "], StringSplitOptions.RemoveEmptyEntries)
                .Select(c => c.Trim()).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
-
-    static string CorHex(string c)
-    {
+    static string CorHex(string c) {
         var s = c.ToLower();
         if (s.Contains("bran"))  return "#F5F5F5";
         if (s.Contains("pre"))   return "#111111";
@@ -705,56 +617,33 @@
         if (s.Contains("mar"))  return "#92400E";
         return "#6B7280";
     }
-
-    static string CorFg(string hex)
-    {
+    static string CorFg(string hex) {
         var dark = new HashSet<string>{
             "#111111","#1E3A5F","#1D4ED8","#7F1D1D","#365314",
             "#7C3AED","#92400E","#DC2626","#EA580C","#16A34A","#1A1A1A","#808080"};
         return dark.Contains(hex) ? "#fff" : "#111";
     }
-
-    static string NomeTipo(Models.TipoProduto t) => t switch
-    {
-        Models.TipoProduto.CamisaPolo   => "Polo",
-        Models.TipoProduto.CamisaMalha  => "Malha",
-        Models.TipoProduto.Jaleco       => "Jaleco",
-        Models.TipoProduto.Calca        => "Calça",
-        Models.TipoProduto.Bermuda      => "Bermuda",
-        Models.TipoProduto.Agasalho     => "Agasalho",
-        Models.TipoProduto.Colete       => "Colete",
-        Models.TipoProduto.Vestido      => "Vestido ♀",
-        Models.TipoProduto.CalcaLegging => "Legging ♀",
-        Models.TipoProduto.Saia         => "Saia ♀",
-        Models.TipoProduto.Macacao      => "Macacão ♀",
-        Models.TipoProduto.BlusaFeminina=> "Blusa Fem. ♀",
-        Models.TipoProduto.Shorts       => "Shorts ♀",
-        _ => t.ToString()
+    static string NomeTipo(Models.TipoProduto t) => t switch {
+        Models.TipoProduto.CamisaPolo=>"Polo",      Models.TipoProduto.CamisaMalha=>"Malha",
+        Models.TipoProduto.Jaleco=>"Jaleco",        Models.TipoProduto.Calca=>"Calça",
+        Models.TipoProduto.Bermuda=>"Bermuda",      Models.TipoProduto.Agasalho=>"Agasalho",
+        Models.TipoProduto.Colete=>"Colete",        Models.TipoProduto.Vestido=>"Vestido ♀",
+        Models.TipoProduto.CalcaLegging=>"Legging ♀", Models.TipoProduto.Saia=>"Saia ♀",
+        Models.TipoProduto.Macacao=>"Macacão ♀",   Models.TipoProduto.BlusaFeminina=>"Blusa Fem. ♀",
+        Models.TipoProduto.Shorts=>"Shorts ♀",     _=>t.ToString()
     };
-
-    static string NomePeca(Models.TipoProduto t) => t switch
-    {
-        Models.TipoProduto.Bermuda      => "Cor da Bermuda",
-        Models.TipoProduto.Calca        => "Cor da Calça",
-        Models.TipoProduto.CamisaMalha  => "Cor da Camiseta",
-        Models.TipoProduto.Jaleco       => "Cor do Jaleco",
-        Models.TipoProduto.Agasalho     => "Cor do Agasalho",
-        Models.TipoProduto.Colete       => "Cor do Colete",
-        Models.TipoProduto.Vestido      => "Cor do Vestido",
-        Models.TipoProduto.CalcaLegging => "Cor da Legging",
-        Models.TipoProduto.Saia         => "Cor da Saia",
-        Models.TipoProduto.Macacao      => "Cor do Macacão",
-        Models.TipoProduto.BlusaFeminina=> "Cor da Blusa",
-        Models.TipoProduto.Shorts       => "Cor do Shorts",
-        _ => "Cor da Peça"
+    static string NomePeca(Models.TipoProduto t) => t switch {
+        Models.TipoProduto.Bermuda=>"Cor da Bermuda", Models.TipoProduto.Calca=>"Cor da Calça",
+        Models.TipoProduto.CamisaMalha=>"Cor da Camiseta", Models.TipoProduto.Jaleco=>"Cor do Jaleco",
+        Models.TipoProduto.Agasalho=>"Cor do Agasalho", Models.TipoProduto.Colete=>"Cor do Colete",
+        Models.TipoProduto.Vestido=>"Cor do Vestido", Models.TipoProduto.CalcaLegging=>"Cor da Legging",
+        Models.TipoProduto.Saia=>"Cor da Saia", Models.TipoProduto.Macacao=>"Cor do Macacão",
+        Models.TipoProduto.BlusaFeminina=>"Cor da Blusa", Models.TipoProduto.Shorts=>"Cor do Shorts",
+        _=>"Cor da Peça"
     };
-
-    static string NomeLogomarca(Models.TipoLogomarca t) => t switch
-    {
-        Models.TipoLogomarca.Bordado    => "Bordado",
-        Models.TipoLogomarca.SilkScreen => "Silk Screen",
-        Models.TipoLogomarca.Sublimacao => "Sublimação",
-        Models.TipoLogomarca.Transfer   => "Transfer",
-        _ => t.ToString()
+    static string NomeLogomarca(Models.TipoLogomarca t) => t switch {
+        Models.TipoLogomarca.Bordado=>"Bordado", Models.TipoLogomarca.SilkScreen=>"Silk Screen",
+        Models.TipoLogomarca.Sublimacao=>"Sublimação", Models.TipoLogomarca.Transfer=>"Transfer",
+        _=>t.ToString()
     };
 }
